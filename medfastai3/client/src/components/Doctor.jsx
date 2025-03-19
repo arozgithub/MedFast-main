@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import Sidebar from './Sidebar'; // Import Sidebar component
 import Chatbot from './chatbot'; // Import chatbot
 import './Doctor.css';  // Import the CSS file
+import DoctorChatbot from './Doctorchatbot'; // Import DoctorChatbot component
 
 const Doctor = () => {
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
@@ -109,7 +110,7 @@ const Doctor = () => {
 
             {/* Chatbot Section */}
             <div className="w-1/2 p-6 flex flex-col bg-gray-200 relative">
-                <Chatbot />
+                <DoctorChatbot />
             </div>
         </div>
     );

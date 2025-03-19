@@ -37,7 +37,7 @@ CLASS_NAMES = {
 }
 
 # Groq API Key (use environment variables in production)
-GROQ_API_KEY = "your_groq_api_key_here"
+GROQ_API_KEY = "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"
 
 # Initialize separate Groq clients for diagnosis and follow-up
 groq_diagnosis_client = Groq(api_key=GROQ_API_KEY)
@@ -49,6 +49,13 @@ class DiagnosisRequest(BaseModel):
 
 class FollowUpRequest(BaseModel):
     conversation_history: str
+
+
+# class DiagnosisRequest_doc(BaseModel):
+#     conversation_history_doc: str
+
+# class FollowUpRequest_doc(BaseModel):
+#     conversation_history_doc: str
 
 def get_tumor_location(x_center, img_width):
     """Determine tumor location based on x_center relative to image width."""
@@ -96,34 +103,114 @@ def query_groq_medical_diagnosis(conversation_history):
 def query_groq_follow_up_questions(conversation_history):
     try:
         messages = [
-          {
-              "role": "system",
-              "content": (
-                  "You are an AI assistant responsible for generating follow-up questions for a patient based on their provided symptoms. "
-                  "You will use the conversation history and previously provided symptoms to ask further questions. "
-                  "Ensure context from the patient's earlier responses is maintained while asking relevant questions.\n\n"
+    {
+        "role": "system",
+        "content": (
+            "You are an empathetic and context-aware AI assistant responsible for generating follow-up questions based on a patient's reported symptoms and conversation history. "
+            "Your task is to carefully review all prior inputs and extract specific details about the patient's symptoms. Then, craft a follow-up question that directly addresses those details, "
+            "aiming to gather additional clarity on the context, severity, or triggers of a particular symptom.\n\n"
+            
+            "1️⃣ **Deep Context Analysis**: Analyze the conversation history to identify any symptom or detail that needs further exploration. "
+            "For instance, if the patient mentioned 'persistent headaches' or 'a sharp pain in the left side,' ensure your question specifically refers to that detail.\n\n"
+            
+            "2️⃣ **Tailored Question Crafting**: Formulate your follow-up question by referencing the exact symptom or context mentioned in the conversation. "
+            "For example, instead of asking, 'Can you tell me more about your headache?', ask 'You mentioned experiencing a sharp pain on the left side of your head—can you describe how this pain changes with different activities?'\n\n"
+            
+            "3️⃣ **Engaging and Specific Queries**: Your follow-up question should be concise, engaging, and designed to elicit more detailed information. "
+            "Ensure that your question feels natural and directly connected to what the patient has already shared.\n\n"
+            
+            "Bot response format:\n"
+            "- Bot: [A context-rich follow-up question addressing a specific detail from the conversation history]\n"
+            "- Only one follow-up question per response, ensuring it is clear and focused."
+        )
+    },
+    {
+        "role": "user",
+        "content": f"Conversation History: {conversation_history}"
+    }
+]
 
-                  "1️⃣ **Symptom Evaluation**: Use the patient's previously provided symptoms to generate context-aware follow-up questions. "
-                  "- Ensure you only ask one follow-up question per response, and the question should be focused on gathering more details about a specific symptom.\n"
-                  "- Example Output: Can you describe more about your headache?\n\n"
-
-                  "2️⃣ **Follow-Up Questions**: After each user response, continue the conversation by asking relevant questions based on the newly provided symptoms, until the patient indicates no more symptoms to discuss.\n\n"
-
-                  "Bot response format:\n"
-                  "- Bot: [follow-up question based on symptom]\n"
-                  "- Only one follow-up question per response, context-aware and concise."
-              )
-          },
-          {
-              "role": "user",
-              "content": f"Conversation History: {conversation_history}"
-          }
-      ]
         response = groq_questions_client.chat.completions.create(messages=messages, model="llama-3.3-70b-versatile")
         return response.choices[0].message.content
     except Exception as e:
         logging.error(f"Error in query_groq_follow_up_questions: {str(e)}")
         return {"error": "Failed to generate follow-up question"}
+    
+
+def query_groq_medical_diagnosis_doc(conversation_history):
+    try:
+        messages = [
+    {
+        "role": "system",
+        "content": (
+            "You are an AI medical assistant specializing in brain tumor diagnosis and treatment. "
+            "You analyze MRI scans using YOLO model outputs, evaluate patient symptoms, and provide detailed, step-by-step professional medical insights. "
+            "Keep the context of previous inputs to ensure accurate follow-up questions and responses.\n\n"
+
+            "1️⃣ **Initial Diagnosis (Display Once)**: After MRI analysis, provide the following details: tumor type, tumor location, tumor size, and YOLO model confidence. "
+            "If a tumor is detected, display 'Tumor Detected: Yes' along with a detailed tumor list including all relevant parameters. "
+            "If no tumor is detected, display 'Tumor Detected: No' and proceed with a symptom-based analysis. "
+            "Example Output: 'Tumor Detected: Yes, Tumor List: Type: meningioma, Location: Left, Size: 40.55mm x 38.76mm, Confidence: 0.37%'\n\n"
+
+            "2️⃣ **Symptoms Analysis & Diagnostic Tests**: Explain how the tumor correlates with the reported symptoms and provide recommendations for further diagnostic tests. "
+            "These tests might include CT scans, biopsies, blood tests, PET scans, or any other relevant investigations to confirm or further evaluate the condition.\n\n"
+
+            "3️⃣ **Treatment Plan & Medication Prescription**: Provide a comprehensive treatment plan tailored to the tumor type and patient symptoms. "
+            "Include recommendations for surgical intervention, radiation therapy, chemotherapy, or referrals to specialists. "
+            "If medications are indicated, list specific prescription names (e.g., Temozolomide, Bevacizumab) along with dosage guidelines or administration instructions where applicable."
+        )
+    },
+    {
+        "role": "user",
+        "content": f"Conversation History: {conversation_history}"
+    }
+]
+
+
+        response = groq_questions_client.chat.completions.create(messages=messages, model="llama-3.3-70b-versatile")
+        return response.choices[0].message.content
+    except Exception as e:
+        logging.error(f"Error in query_groq_follow_up_questions: {str(e)}")
+        return {"error": "Failed to generate follow-up question"}
+        
+    
+def query_groq_follow_up_questions_doc(conversation_history):
+    try:
+        messages = [
+            {
+                "role": "system",
+                "content": (
+                    "You are an AI assistant responsible for generating follow-up questions for a doctor based on their findings from an MRI scan and the patient's reported symptoms. "
+                    "You will use the conversation history—which includes the doctor's detailed MRI observations and the patient's symptoms—to ask targeted, clarifying questions. "
+                    "Your questions should help resolve any ambiguities in the MRI findings and further explore the patient's symptoms to support a more precise diagnosis.\n\n"
+                    
+                    "1️⃣ **Doctor Consultation**: Ask context-aware follow-up questions that specifically address the MRI findings and the patient’s symptoms. "
+                    "For example, if the doctor mentioned an irregular lesion or a specific anomaly in the MRI, and the patient reported related discomfort or other symptoms, your question should probe further into those details. "
+                    "Example: 'Can you elaborate on the irregular shape observed in the left hemisphere and confirm if the patient experiences correlated pain in that region?'\n\n"
+                    
+                    "2️⃣ **Iterative Clarification**: Ensure that you ask only one focused follow-up question per response. "
+                    "Each question should be concise, directly related to the previously provided information, and designed to gather additional details until the doctor indicates no further observations are needed.\n\n"
+                    
+                    "Bot response format:\n"
+                    "- Bot: [Follow-up question targeting MRI findings and patient symptoms]\n"
+                    "- Only one follow-up question per response, ensuring it is context-aware and concise."
+                )
+            },
+            {
+                "role": "user",
+                "content": f"Conversation History: {conversation_history}"
+            }
+        ]
+
+        response = groq_questions_client.chat.completions.create(messages=messages, model="llama-3.3-70b-versatile")
+        return response.choices[0].message.content
+    except Exception as e:
+        logging.error(f"Error in query_groq_follow_up_questions: {str(e)}")
+        return {"error": "Failed to generate follow-up question"}
+
+    
+
+
 
 # YOLO-based MRI Tumor Detection Endpoint
 @app.post("/detect_tumor/")
@@ -192,5 +279,19 @@ async def ai_medical_diagnosis(request: DiagnosisRequest):
 async def ai_followup_questions(request: FollowUpRequest):
     follow_up = query_groq_follow_up_questions(request.conversation_history)
     return {"follow_up_question": follow_up}
+
+
+
+@app.post("/ai_diagnosis_doc/")
+async def ai_medical_diagnosis_doc(request: DiagnosisRequest):
+    diagnosis= query_groq_medical_diagnosis_doc(request.conversation_history)
+    return {"diagnosis": diagnosis}
+
+# Endpoint: AI-Generated Follow-Up Questions
+@app.post("/ai_followup_doc/")
+async def ai_followup_questions_doc(request: FollowUpRequest):
+    follow_up = query_groq_follow_up_questions_doc(request.conversation_history)
+    return {"follow_up_question": follow_up}
+
 
 # To run the app, use: uvicorn app:app --reload

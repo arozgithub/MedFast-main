@@ -68,7 +68,7 @@ const XRayAnalysis = () => {
 
             {/* Main Content */}
             <div className={`segmentation-content ${isSidebarOpen ? 'shifted' : ''}`}>
-                <h1 className="text-2xl font-bold mb-4">Upload Xray</h1>
+                <h1 className="text-2xl font-bold mb-4">Upload Xray---</h1>
                 
                 {/* Upload Section */}
                 <div className="upload-container">

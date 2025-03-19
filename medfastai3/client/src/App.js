@@ -4,7 +4,6 @@ import Navbar from './components/Navbar'; // Import the Navbar component
 import { BrowserRouter as Router, Route, Routes, Link } from 'react-router-dom';
 import Segmentation from './components/Segmentation';
 import TumorDetection from './components/TumorDetection';
-import Doctor from './components/XRayAnalysis';
 import DiabetesDetection from './components/DiabetesDetection';
 import './App.css';
 import Home from './Home';
@@ -15,6 +14,8 @@ import Abstract from './Abstract';
 import Dashboard from './Dashboard'; 
 import Sidebar from './components/Sidebar';// Import the Dashboard component
 import XRayAnalysis from './components/XRayAnalysis';
+import Doctor from './components/Doctor';
+
 
 
 function App() {
@@ -39,7 +40,7 @@ function App() {
         <Route path="/tumor-detection" element={<TumorDetection />} />
         <Route path="/xray-analysis" element={<XRayAnalysis />} />
         <Route path="/diabetes-detection" element={<DiabetesDetection />} />
-        <Route path="doctor" element={<Doctor/>} />
+        <Route path="/doctor" element={<Doctor/>} />
       </Routes>
       {/* <Sidebar/> */}
       
