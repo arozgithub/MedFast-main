@@ -1,0 +1,31 @@
+.navbar {
+   /* background-color: #1f1f1f;*/ /* Navbar background color */
+    padding: 1rem; /* Standard padding */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5); /* Shadow effect */
+    display:flex;
+    justify-content: center;
+}
+
+.navbar ul {
+    list-style: none; /* Remove default list styling */
+    padding: 0; /* Remove padding */
+    margin: 0; /* Remove margin */
+    display: flex; /* Flex layout for navbar items */
+}
+
+.navbar ul li {
+    margin-left: 1.25rem; /* Standard margin */
+}
+
+.navbar ul li a {
+    color: #e0e0e0; /* Link color */
+    text-decoration: none; /* Remove underline */
+    padding: 0.5rem 0.75rem; /* Standard padding */
+    border-radius: 0.25rem; /* Rounded corners */
+    transition: background-color 0.3s ease; /* Transition effect */
+}
+
+.navbar ul li a:hover {
+    background-color: #00bcd4; /* Hover background color */
+    color: #121212; /* Hover text color */
+}

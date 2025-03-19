@@ -1,0 +1,18 @@
+.header-container {
+    background-color: #1f1f1f; /* Header background color */
+    padding: 1rem; /* Standard padding */
+
+}
+.icon
+{
+    display:flex;
+    justify-content: center;
+    align-items: center;
+    width:100%;
+    padding:0rem;
+}
+
+.header-container .icon h1 {
+    color: #e0e0e0; /* Header text color */
+    margin: 0; /* Remove default margin */
+}

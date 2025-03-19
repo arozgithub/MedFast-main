@@ -1,0 +1,112 @@
+/* General Styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Poppins', sans-serif;
+    transition: all 0.3s ease-in-out; /* Smooth transitions for all elements */
+}
+
+/* Home Section */
+.home {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    min-height: 100vh; /* Ensure full-screen height */
+    /* background: linear-gradient(145deg, #2b6cb0, #3182ce); Beautiful gradient background */
+    padding: 2rem;
+}
+
+/* Container for Content */
+.container {
+    max-width: 600px;
+    width: 100%;
+    padding: 2rem;
+    background: rgba(255, 255, 255, 0.9); /* Light background with slight transparency */
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+    backdrop-filter: blur(10px); /* Slight blur effect */
+}
+
+/* Heading Styles */
+.content h1 {
+    font-size: 3rem;
+    color: #00bcd4;
+    margin-bottom: 0.5rem;
+    font-weight: 700;
+    text-align: center;
+    text-transform: uppercase;
+    letter-spacing: 2px; /* Slightly spaced text */
+}
+
+/* Subheading */
+.content h3 {
+    font-size: 1.75rem;
+    color: #fff;
+    margin-bottom: 1rem;
+    text-align: center;
+    font-weight: 500;
+}
+
+/* Paragraph Text */
+.content p {
+    font-size: 1.2rem;
+    color: #f4f4f4;
+    margin-bottom: 2rem;
+    text-align: center;
+    line-height: 1.5;
+    letter-spacing: 0.5px;
+}
+
+/* Button */
+.button {
+    display: inline-block;
+    background: #00bcd4;
+    color: #fff;
+    padding: 0.75rem 2rem;
+    border-radius: 50px; /* Round button corners */
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 1.1rem;
+    text-transform: uppercase;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transition: 0.3s ease;
+    text-align: center;
+    margin-top: 1rem;
+}
+
+.button:hover {
+    /* background: #008c96; */
+    transform: translateY(-2px); /* Slight lift on hover */
+    box-shadow: 0 8px 18px rgba(0, 0, 0, 0.2); /* Enhanced shadow */
+}
+
+/* Footer */
+.footer {
+    position: absolute;
+    bottom: 10px;
+    width: 100%;
+    text-align: center;
+    font-size: 0.9rem;
+    color: #bbb;
+    margin-top: 2rem; /* Added margin to avoid overlap with content */
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+    .content h1 {
+        font-size: 2.2rem; /* Slightly smaller font size for mobile */
+    }
+    .content h3 {
+        font-size: 1.5rem;
+    }
+    .content p {
+        font-size: 1rem;
+    }
+    .button {
+        padding: 0.6rem 1.8rem; /* Adjusted padding for smaller screens */
+        font-size: 1rem; /* Smaller font size for mobile */
+    }
+}

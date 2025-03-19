@@ -1,0 +1,46 @@
+{
+  "name": "medfastai3",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "@mui/icons-material": "^6.4.7",
+    "@mui/material": "^6.4.7",
+    "chart.js": "^4.4.7",
+    "cra-template": "1.2.0",
+    "lucide-react": "^0.482.0",
+    "medfastai3": "file:",
+    "react": "^19.0.0",
+    "react-chartjs-2": "^5.3.0",
+    "react-dom": "^19.0.0",
+    "react-easy-emoji": "^1.8.1",
+    "react-file-image-to-base64": "^1.0.1",
+    "react-router-dom": "^7.1.5",
+    "react-scripts": "5.0.1",
+    "styled": "^1.0.0",
+    "web-vitals": "^4.2.4"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject"
+  },
+  "eslintConfig": {
+    "extends": [
+      "react-app",
+      "react-app/jest"
+    ]
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  }
+}

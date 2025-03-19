@@ -1,0 +1,26 @@
+.navbar {
+    display: flex; /* Use Flexbox for alignment */
+    justify-content: space-between; /* Space between items */
+    align-items: center; /* Center items vertically */
+    background-color: #1c1c1c; /* Navbar background color */
+    padding: 1rem; /* Standard padding */
+}
+
+
+.navbar h1 {
+    color: #00bcd4; /* Navbar title color */
+}
+
+.navbar a {
+    color: #f4f4f4; /* Link color */
+    text-decoration: none;
+    padding: 0.5rem 1rem; /* Link padding */
+    transition: background-color 0.3s ease; /* Smooth transition for hover */
+}
+
+
+.navbar a:hover {
+    background-color: #00bcd4; /* Link hover color */
+    color: white; /* Link hover text color */
+    border-radius: 0.25rem; /* Rounded corners on hover */
+}

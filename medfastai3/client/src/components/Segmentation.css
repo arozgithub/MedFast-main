@@ -1,0 +1,103 @@
+/* Segmentation Page Layout */
+.segmentation-container {
+    display: flex;
+    overflow-x: hidden; /* Prevents horizontal scrolling */
+}
+
+/* Sidebar */
+.sidebar {
+    width: 250px;
+    background-color: #1e1e1e;
+    height: 100vh;
+    position: relative;
+    left: -250px; /* Start off-screen */
+    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.3);
+    transition: left 0.3s ease-in-out;
+    padding: 20px;
+    overflow-y: auto; /* Enable scrolling inside sidebar */
+}
+
+/* Sidebar Open State */
+.sidebar.open {
+    left: 0;
+}
+
+/* Sidebar Toggle Button */
+.sidebar-toggle {
+    position: fixed;
+    top: 60%;
+    left: 10px;
+    transform: translateY(-50%);
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+    transition: left 0.3s ease, background-color 0.3s ease;
+    background-color: #1a1a1a;
+    border: 1px solid #333;
+    border-radius: 4px;
+    color: #f4f4f4;
+    z-index: 1000;
+    width: 5rem;
+}
+
+.sidebar-toggle:hover {
+    background-color: #00bcd4;
+    color: white;
+}
+
+/* Toggle Button Positions */
+.sidebar-toggle.closed {
+    left: 10px;
+}
+
+.sidebar-toggle.open {
+    left: 260px;
+}
+
+/* Main Content */
+.segmentation-content {
+    flex: 1;
+    padding: 2rem;
+    transition: width 0.3s ease;
+    width: 80%;
+}
+
+/* Shift main content when sidebar is open */
+.segmentation-content.shifted {
+    margin-left: 0rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Upload Section */
+.upload-container {
+    margin-top: 2rem;
+    padding: 1.5rem;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+    text-align: center;
+    max-width: 40rem;
+    margin-left: auto;
+    margin-right: auto;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Upload Button */
+.upload-button {
+    padding: 10px 20px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.upload-button:hover {
+    background-color: #0056b3;
+}
