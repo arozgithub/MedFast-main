@@ -139,6 +139,7 @@
   
   .upload-btn input {
     display: none;
+    
   }
   
   /* Diagnose Button (No Hover Effect) */
@@ -159,6 +160,7 @@
   @media (max-width: 400px) {
     .chatbot-box {
       width: 90%;
+      
       height: 450px;
     }
   }

@@ -2,14 +2,19 @@ from fastapi import FastAPI, UploadFile, File
 from pydantic import BaseModel
 from groq import Groq  # Use `Groq` as needed
 import io
+import asyncio
 from fastapi.responses import JSONResponse
 import base64
 from PIL import Image
 import logging
 import numpy as np
 import cv2
+import imageio
 from ultralytics import YOLO
 from fastapi.middleware.cors import CORSMiddleware
+from tensorflow.keras.models import load_model
+from keras.layers import InputLayer as KerasInputLayer
+from tensorflow.keras.mixed_precision import Policy
 
 # Initialize FastAPI
 app = FastAPI()
@@ -22,6 +27,104 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+# ---------------------
+# Pneumonia Detection Setup
+# ---------------------
+
+# Define a custom InputLayer to handle the batch_shape keyword if needed
+class CustomInputLayer(KerasInputLayer):
+    def __init__(self, **kwargs):
+        # Replace 'batch_shape' with 'batch_input_shape' if present
+        if "batch_shape" in kwargs:
+            kwargs["batch_input_shape"] = kwargs.pop("batch_shape")
+        super(CustomInputLayer, self).__init__(**kwargs)
+
+# Register custom object for the dtype policy
+custom_objects = {'InputLayer': CustomInputLayer, 'DTypePolicy': Policy}
+
+MODEL_PATH = 'model.h5'
+
+# Load the model using the custom objects
+try:
+    model = load_model(MODEL_PATH, custom_objects=custom_objects, compile=False)
+    print("Model loaded successfully!")
+except Exception as e:
+    print("Error loading model:", e)
+
+# Define a function to preprocess an image file for prediction (using file path)
+def preprocess_image(image_path, img_size=150):
+    """
+    Preprocess the input image from a file path:
+      - Reads the image in grayscale.
+      - Resizes it to (img_size, img_size).
+      - Normalizes pixel values to the range [0, 1].
+      - Reshapes it to (1, img_size, img_size, 1) for model prediction.
+    """
+    image = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
+    if image is None:
+        raise ValueError(f"Unable to load image at {image_path}. Check the file path.")
+    
+    image = cv2.resize(image, (img_size, img_size))
+    image = image.astype("float32") / 255.0
+    image = image.reshape(1, img_size, img_size, 1)
+    return image
+
+# ---------------------
+# FastAPI Endpoints
+# ---------------------
+
+@app.post("/detect_pneumonia/")
+async def detect_pneumonia(image: UploadFile = File(...)):
+    try:
+        # Read the uploaded image from the request
+        img = Image.open(io.BytesIO(await image.read()))
+        # Convert to grayscale (since our model expects grayscale images)
+        img = img.convert("L")
+        
+        # Resize the image to match the model's input size (150x150)
+        img = img.resize((150, 150))
+        
+        # Convert image to numpy array, normalize and reshape to (1, 150, 150, 1)
+        img_array = np.array(img, dtype="float32") / 255.0
+        img_array = img_array.reshape(1, 150, 150, 1)
+        
+        # Run the model prediction
+        prediction = model.predict(img_array)
+        # For binary classification using a sigmoid activation:
+        # If prediction > 0.5 then assume label "Normal", else "Pneumonia Detected"
+        pneumonia_probability = float(prediction[0][0])
+        result = "Normal" if pneumonia_probability > 0.5 else "Pneumonia Detected"
+        
+        # --- Annotate the image ---
+        # Convert the grayscale image (PIL Image) to a NumPy array for OpenCV processing
+        annotated_img = np.array(img)
+        # Convert grayscale to BGR (so that colored text can be drawn)
+        annotated_img = cv2.cvtColor(annotated_img, cv2.COLOR_GRAY2BGR)
+        # Define text parameters
+        text = result
+        font = cv2.FONT_HERSHEY_SIMPLEX
+        font_scale = 0.8
+        color = (0, 255, 0)  # green text
+        thickness = 2
+        # Put the result text on the image
+        cv2.putText(annotated_img, text, (10, 30), font, font_scale, color, thickness, cv2.LINE_AA)
+        # Encode the annotated image as JPEG
+        _, buffer = cv2.imencode('.jpg', annotated_img)
+        encoded_image = base64.b64encode(buffer).decode('utf-8')
+        
+        response_data = {
+            "result": result,
+            "pneumonia_probability": pneumonia_probability,
+            "image": encoded_image
+        }
+        return JSONResponse(content=response_data)
+    except Exception as e:
+        logging.error(f"Error in detect_pneumonia: {str(e)}")
+        return JSONResponse(content={"error": "Failed to detect pneumonia"}, status_code=500)
+
+
 
 # Load YOLO model (update the model path as necessary)
 MODEL_PATH = "best.pt"
@@ -292,6 +395,89 @@ async def ai_medical_diagnosis_doc(request: DiagnosisRequest):
 async def ai_followup_questions_doc(request: FollowUpRequest):
     follow_up = query_groq_follow_up_questions_doc(request.conversation_history)
     return {"follow_up_question": follow_up}
+
+
+#----------------------------------------------------------------------------
+#segementation:
+TUMOR_MODEL_PATH = "C:/MedFast-main/medfastai3/client/backend/segment_model.h5"
+tumor_model = load_model(TUMOR_MODEL_PATH, compile=False)
+
+print(f"Tumor segmentation model loaded: {tumor_model}")
+
+def preprocess_tumor_image(image, target_size=(256, 256)):
+    """
+    Preprocess the input image:
+      - Ensure the image is RGB.
+      - Resize the image to the target size.
+      - Normalize pixel values to [0,1].
+      - Expand dimensions for model prediction.
+    """
+    if image.mode != "RGB":
+        image = image.convert("RGB")
+    image = image.resize(target_size)
+    image_array = np.array(image, dtype="float32") / 255.0
+    image_array = np.expand_dims(image_array, axis=0)
+    return image_array
+
+@app.post("/detect_tumor_h5/")
+async def detect_tumor_h5(image: UploadFile = File(...)):
+    try:
+        # Read the uploaded image
+        img = Image.open(io.BytesIO(await image.read()))
+        
+        # Preprocess the image (adjust target_size as needed)
+        processed_img = preprocess_tumor_image(img, target_size=(256, 256))
+        
+        loop = asyncio.get_event_loop()
+        # Run the heavy segmentation task in a background thread
+        prediction = await loop.run_in_executor(None, lambda: tumor_model.predict(processed_img))
+        mask = prediction[0, :, :, 0]  # Extract the mask
+        
+        # Threshold the mask to obtain a binary mask (adjust threshold if necessary)
+        mask_binary = (mask > 0.5).astype(np.uint8) * 255
+        
+        # Extract tumor boundaries using contours
+        contours, _ = cv2.findContours(mask_binary, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        tumor_boundaries = []
+        for contour in contours:
+            points = contour.squeeze().tolist()
+            if isinstance(points[0], int):
+                points = [points]
+            tumor_boundaries.append(points)
+        
+        # Resize the original image for visualization (to match target_size)
+        img_resized = img.resize((256, 256))
+        img_np = np.array(img_resized)
+        
+        # Create an overlay: for pixels where the mask is positive, paint red
+        overlay = img_np.copy()
+        overlay[mask_binary == 255] = [255, 0, 0]
+        
+        # Blend the original image and the overlay (base frame without boundaries)
+        alpha = 0.5
+        annotated_no_contour = cv2.addWeighted(img_np, 1 - alpha, overlay, alpha, 0)
+        # Create a frame with boundaries: copy the base frame and draw contours in green
+        annotated_with_contour = annotated_no_contour.copy()
+        cv2.drawContours(annotated_with_contour, contours, -1, (0, 255, 0), 2)
+        
+        # Create an animated GIF from two frames (blinking effect, looping indefinitely)
+        frames = [annotated_with_contour, annotated_no_contour]
+        gif_buffer = io.BytesIO()
+        import imageio
+        imageio.mimsave(gif_buffer, frames, format='GIF', duration=0.5, loop=0)
+        gif_buffer.seek(0)
+        encoded_gif = base64.b64encode(gif_buffer.read()).decode("utf-8")
+        
+        response_data = {
+            "tumor_detected": bool(np.any(mask_binary)),
+            "boundaries": tumor_boundaries,
+            "image": encoded_gif
+        }
+        return JSONResponse(content=response_data)
+    except Exception as e:
+        logging.error(f"Error in detect_tumor_h5: {str(e)}")
+        return JSONResponse(content={"error": "Failed to detect tumor using h5 model"}, status_code=500)
+
 
 
 # To run the app, use: uvicorn app:app --reload

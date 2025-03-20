@@ -108,8 +108,8 @@ const Chatbot = () => {
     <div className={`chatbot-container ${isOpen ? "open" : ""}`}>
       {isOpen ? (
         <div className="chatbot-box">
-          <div className="chatbot-header">
-            <span>AI Medical Assistant</span>
+          <div className="chatbot-header text-center">
+            <span className="text-red-400">AI Medical Assistant</span>
             <X className="close-btn" onClick={() => setIsOpen(false)} />
           </div>
           <div className="chatbot-messages">

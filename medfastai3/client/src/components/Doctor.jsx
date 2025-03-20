@@ -110,10 +110,11 @@ const Doctor = () => {
 
             {/* Chatbot Section */}
             <div className="w-1/2 p-6 flex flex-col bg-gray-200 relative">
-                <DoctorChatbot />
+                <Chatbot />
             </div>
         </div>
     );
 };
+
 
 export default Doctor;
