@@ -1,103 +1,89 @@
-/* Segmentation Page Layout */
-.segmentation-container {
+/* Overall container for diabetes prediction and chatbot */
+.diabetes-container {
     display: flex;
-    overflow-x: hidden; /* Prevents horizontal scrolling */
-}
-
-/* Sidebar */
-.sidebar {
-    width: 250px;
-    background-color: #1e1e1e;
-    height: 100vh;
-    position: relative;
-    left: -250px; /* Start off-screen */
-    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.3);
-    transition: left 0.3s ease-in-out;
-    padding: 20px;
-    overflow-y: auto; /* Enable scrolling inside sidebar */
-}
-
-/* Sidebar Open State */
-.sidebar.open {
-    left: 0;
-}
-
-/* Sidebar Toggle Button */
-.sidebar-toggle {
-    position: fixed;
-    top: 60%;
-    left: 10px;
-    transform: translateY(-50%);
-    padding: 0.5rem 1rem;
-    cursor: pointer;
-    transition: left 0.3s ease, background-color 0.3s ease;
-    background-color: #1a1a1a;
-    border: 1px solid #333;
-    border-radius: 4px;
-    color: #f4f4f4;
-    z-index: 1000;
-    width: 5rem;
-}
-
-.sidebar-toggle:hover {
-    background-color: #00bcd4;
-    color: white;
-}
-
-/* Toggle Button Positions */
-.sidebar-toggle.closed {
-    left: 10px;
-}
-
-.sidebar-toggle.open {
-    left: 260px;
-}
-
-/* Main Content */
-.segmentation-content {
+    flex-wrap: nowrap;
+    width: 100%;
+    min-height: 100vh;
+  }
+  
+  /* Diabetes Content (Left Column) */
+  .diabetes-content {
     flex: 1;
     padding: 2rem;
-    transition: width 0.3s ease;
-    width: 80%;
-}
-
-/* Shift main content when sidebar is open */
-.segmentation-content.shifted {
-    margin-left: 0rem;
     display: flex;
     flex-direction: column;
-    justify-content: center;
     align-items: center;
-}
-
-/* Upload Section */
-.upload-container {
-    margin-top: 2rem;
-    padding: 1.5rem;
-    background: rgba(255, 255, 255, 0.05);
-    border-radius: 10px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+    justify-content: flex-start; /* content at the top */
     text-align: center;
-    max-width: 40rem;
-    margin-left: auto;
-    margin-right: auto;
+  }
+  
+  /* Optional: when sidebar is open, shift content accordingly */
+  .diabetes-content.shifted {
+    margin-left: 250px; /* adjust based on your sidebar width */
+  }
+  
+  /* Header Styling */
+  .diabetes-content h1 {
+    margin-top: 20px;
+    margin-bottom: 1rem;
+  }
+  
+  /* Diabetes Form Styling */
+  .diabetes-form {
+    width: 100%;
+    max-width: 500px;  /* Limit form width */
+    padding: 2rem;     /* Adjust padding as needed */
+    margin: 0 auto;
+    background-color: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Form Group Styling */
+  .form-group {
+    margin-bottom: 1rem;
     display: flex;
     flex-direction: column;
-    justify-content: center;
-    align-items: center;
-}
-
-/* Upload Button */
-.upload-button {
-    padding: 10px 20px;
+    text-align: left;
+  }
+  
+  .form-group label {
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+  }
+  
+  .form-group input {
+    padding: 0.5rem;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+  }
+  
+  /* Submit Button Styling */
+  .submit-button {
+    width: 100%;
+    padding: 0.75rem;
     background-color: #007bff;
-    color: white;
+    color: #fff;
     border: none;
-    border-radius: 5px;
+    border-radius: 4px;
     cursor: pointer;
+    margin-top: 1rem;
     transition: background-color 0.3s ease;
-}
-
-.upload-button:hover {
+  }
+  
+  .submit-button:hover {
     background-color: #0056b3;
-}
+  }
+  
+  /* Result Display Section */
+  .diabetes-content .mt-4 {
+    width: 100%;
+    max-width: 500px;
+    margin: 1rem auto 0;
+    padding: 1rem;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background-color: #f4f4f4;
+    text-align: left;
+  }
+  

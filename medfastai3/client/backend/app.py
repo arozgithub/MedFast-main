@@ -15,6 +15,19 @@ from fastapi.middleware.cors import CORSMiddleware
 from tensorflow.keras.models import load_model
 from keras.layers import InputLayer as KerasInputLayer
 from tensorflow.keras.mixed_precision import Policy
+from langchain_community.vectorstores import FAISS
+# extract_text_and_save_index.py
+
+import pandas as pd
+from langchain_community.embeddings import HuggingFaceEmbeddings
+from langchain_community.vectorstores import FAISS
+# from langchain.text_splitter import NLTKTextSplitter  # optional alternative
+
+# For prompts and chains (if needed)
+from langchain.prompts import PromptTemplate
+from langchain.chains import LLMChain
+
+
 
 # Initialize FastAPI
 app = FastAPI()
@@ -28,7 +41,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+rag_embeddings = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
+# Load the FAISS index from your saved folder "faiss_index_hp"
+vectordb = FAISS.load_local("faiss_index_hp", rag_embeddings, allow_dangerous_deserialization=True)
 
+print("Reference FAISS index loaded.")
 # ---------------------
 # Pneumonia Detection Setup
 # ---------------------
@@ -170,37 +187,55 @@ def get_tumor_location(x_center, img_width):
         return "central region"
 
 # AI Medical Diagnosis using Groq
+
 def query_groq_medical_diagnosis(conversation_history):
     try:
-        messages = [
-    {
-        "role": "system",
-        "content": (
-            "You are an AI medical assistant specializing in brain tumor diagnosis and treatment. "
-            "You analyze MRI scans using YOLO model outputs, review patient symptoms, and provide detailed, professional medical insights. "
-            "Keep the context of previous inputs to ensure appropriate follow-up questions and responses.\n\n"
-            "1️⃣ **Initial Diagnosis (Display Once)**: After analyzing the MRI scan, provide the following details: tumor type, tumor location, tumor size, and YOLO model confidence. "
-            "If a tumor is detected, display 'Tumor Detected: Yes' along with a list of tumor details. "
-            "If no tumor is detected, display 'Tumor Detected: No' and proceed with a symptom-based analysis.\n\n"
-            "2️⃣ **Symptoms Analysis**: Analyze and explain how the tumor (if detected) relates to the patient's provided symptoms, referencing the conversation history.\n\n"
-            "3️⃣ **Treatment Plan**: Provide a comprehensive treatment plan. Include options such as surgery, radiation, chemotherapy, or referrals. "
-            "If medications are recommended, list specific medication prescription names and details (for example, dosage and administration instructions) that are typically used in such cases.\n\n"
-            "4️⃣ **Step-by-Step Explanation**: Clearly outline the diagnostic process in steps, including how the MRI analysis, symptom evaluation, and treatment recommendations were derived. "
-            "Each step should be clearly delineated and supported by relevant medical reasoning.\n\n"
-            "Ensure that your response is precise, detailed, and provides clear guidance at every step of the diagnosis and treatment planning process."
-        )
-    },
-    {
-        "role": "user",
-        "content": f"Conversation History: {conversation_history}"
-    }
-]
+        # Retrieve top 3 reference passages using the FAISS index (vectordb)
+        docs = vectordb.similarity_search(conversation_history, k=3)
+        refs = [doc.page_content for doc in docs]
 
-        response = groq_diagnosis_client.chat.completions.create(messages=messages, model="llama-3.3-70b-versatile")
+        # Print retrieved references for debugging
+        print("Retrieved references:")
+        for i, ref in enumerate(refs):
+            print(f"Reference {i+1}: {ref}")
+
+        # Build a detailed system message with instructions and include references information
+        system_message = (
+            "You are an AI medical assistant specializing in brain tumor diagnosis and treatment. "
+            "You analyze MRI scans using YOLO model outputs, evaluate patient symptoms, and provide detailed, step-by-step professional medical insights. "
+            "Keep the context of previous inputs to ensure accurate follow-up questions and responses.\n\n"
+            "1️⃣ **Initial Diagnosis (Display Once)**: After MRI analysis, provide the following details: tumor type, tumor location, tumor size, and YOLO model confidence. "
+            "If a tumor is detected, display 'Tumor Detected: Yes' along with a detailed tumor list including all relevant parameters. "
+            "If no tumor is detected, display 'Tumor Detected: No' and proceed with a symptom-based analysis. "
+            "Example Output: 'Tumor Detected: Yes, Tumor List: Type: meningioma, Location: Left, Size: 40.55mm x 38.76mm, Confidence: 0.37%'\n\n"
+            "2️⃣ **Symptoms Analysis & Diagnostic Tests**: Explain how the tumor correlates with the reported symptoms and provide recommendations for further diagnostic tests. "
+            "These tests might include CT scans, biopsies, blood tests, PET scans, or any other relevant investigations.\n\n"
+            "3️⃣ **Treatment Plan & Medication Prescription**: Provide a comprehensive treatment plan tailored to the tumor type and patient symptoms. "
+            "Include recommendations for surgical intervention, radiation therapy, chemotherapy, or referrals to specialists. "
+            "If medications are indicated, list specific prescription names (e.g., Temozolomide, Bevacizumab) along with dosage guidelines or administration instructions.\n\n"
+            "At the end of your answer, please clearly list the references used (i.e. the following retrieved passages):\n"
+        )
+        # Append each retrieved reference to the system message
+        for i, ref in enumerate(refs):
+            system_message += f"Reference {i+1}: {ref}\n\n"
+
+        # Now, include the conversation history as a user message
+        messages = [
+            {"role": "system", "content": system_message},
+            {"role": "user", "content": "Conversation History:\n" + conversation_history}
+        ]
+
+        # Call the Groq API for diagnosis using the augmented prompt
+        response = groq_diagnosis_client.chat.completions.create(
+            messages=messages,
+            model="llama-3.3-70b-versatile"
+        )
         return response.choices[0].message.content
     except Exception as e:
         logging.error(f"Error in query_groq_medical_diagnosis: {str(e)}")
         return {"error": "Failed to generate diagnosis"}
+
+
 
 # AI Follow-Up Question Generator using Groq
 def query_groq_follow_up_questions(conversation_history):
@@ -478,6 +513,56 @@ async def detect_tumor_h5(image: UploadFile = File(...)):
         logging.error(f"Error in detect_tumor_h5: {str(e)}")
         return JSONResponse(content={"error": "Failed to detect tumor using h5 model"}, status_code=500)
 
+    ####################################
+# Diabetes Prediction Endpoint     #
+####################################
+
+# Define a Pydantic model for the diabetes input data
+class DiabetesInput(BaseModel):
+    pregnancies: float
+    glucose: float
+    bloodPressure: float
+    skinThickness: float
+    insulin: float
+    BMI: float
+    diabetesPedigreeFunction: float
+    age: float
+
+# Load the diabetes model from the h5 file
+DIABETES_MODEL_PATH = "Diabetesmodel.h5"  # Update this path if needed
+diabetes_model = load_model(DIABETES_MODEL_PATH, compile=False)
+diabetes_model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
+print("Diabetes model loaded:")
+# diabetes_model.summary()
+
+@app.post("/predict_diabetes/")
+async def predict_diabetes(input_data: DiabetesInput):
+    try:
+        # Convert the input data to a numpy array in the correct order
+        data_array = np.array([
+            input_data.pregnancies,
+            input_data.glucose,
+            input_data.bloodPressure,
+            input_data.skinThickness,
+            input_data.insulin,
+            input_data.BMI,
+            input_data.diabetesPedigreeFunction,
+            input_data.age
+        ], dtype="float32")
+        # Reshape to (1,8) instead of (1,1,8)
+        data_array = data_array.reshape(1, 8)
+        
+        predictions = diabetes_model.predict(data_array)
+        # Assuming the model outputs a single probability per sample
+        prediction_probability = float(predictions[0][0])
+        outcome = 1 if prediction_probability > 0.5 else 0
+        return JSONResponse(content={
+            "prediction_probability": prediction_probability,
+            "predicted_outcome": outcome
+        })
+    except Exception as e:
+        logging.error(f"Error in predict_diabetes: {str(e)}")
+        return JSONResponse(content={"error": "Failed to predict diabetes outcome"}, status_code=500)
 
 
 # To run the app, use: uvicorn app:app --reload
