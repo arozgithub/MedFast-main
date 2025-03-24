@@ -1,0 +1,31 @@
+# Combined Requirements for the Project
+
+# Client Dependencies
+pdfplumber
+pandas
+langchain
+notebook
+transformers
+datasets>=2.2.0
+pyarrow
+numpy
+requests>=2.26.0
+sentence_transformers>=2.2.0
+torch
+tqdm
+rich
+InstructorEmbedding
+faiss-cpu
+pyperclip
+ipywidgets
+
+# Server Dependencies
+fastapi
+uvicorn
+sqlalchemy
+psycopg2-binary
+python-socketio
+passlib[bcrypt]
+python-jose[cryptography]
+python-multipart
+python-dotenv
