@@ -53,6 +53,7 @@ MedFast/
 │   └── ...                              # Other frontend configuration files
 ├── README.md                            # This file
 └── LICENSE                              # MIT License file
+````
 Installation
 Backend Setup
 Clone the Repository:
