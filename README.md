@@ -54,8 +54,153 @@ MedFast/
 ├── README.md                            # This file
 └── LICENSE                              # MIT License file
 ````
+
 Installation
 Backend Setup
-Clone the Repository:
+Clone the Repository
+bash
+Copy
 git clone https://github.com/yourusername/MedFast.git
 cd MedFast/backend
+Create and Activate a Virtual Environment
+Windows:
+
+bash
+Copy
+python -m venv venv
+venv\Scripts\activate
+macOS/Linux:
+
+bash
+Copy
+python -m venv venv
+source venv/bin/activate
+Install Backend Dependencies
+bash
+Copy
+pip install -r requirements.txt
+Ensure your requirements.txt includes:
+
+fastapi
+
+uvicorn
+
+tensorflow
+
+keras
+
+ultralytics
+
+langchain-community (or langchain-huggingface, if applicable)
+
+faiss-cpu
+
+pdfplumber
+
+pandas
+
+tqdm
+
+imageio
+
+Generate the FAISS Index (if not already present)
+If you haven’t created your reference embeddings yet, run:
+
+bash
+Copy
+python extract_text_and_save_index.py
+This command will create a folder (e.g., faiss_index_hp) containing the FAISS index files (index.faiss and index.pkl).
+
+Frontend Setup
+Navigate to the Frontend Directory
+bash
+Copy
+cd ../frontend
+Install Frontend Dependencies
+bash
+Copy
+npm install
+Running the Application
+Start the Backend
+From the MedFast/backend directory, launch the FastAPI server:
+
+bash
+Copy
+uvicorn app:app --host 127.0.0.1 --port 8000 --reload
+Your backend should now be accessible at http://127.0.0.1:8000.
+
+Start the Frontend
+In a separate terminal, navigate to the MedFast/frontend directory and start the React development server:
+
+bash
+Copy
+npm start
+Typically, the frontend runs on http://localhost:3000.
+
+Usage
+Pneumonia Detection:
+Upload a chest X-ray image using the XRayAnalysis component. The application processes the image and returns an annotated version indicating whether pneumonia is detected.
+
+Tumor Detection & Segmentation:
+
+Tumor Detection:
+Access the /detect_tumor/ endpoint to identify brain tumors in MRI scans using the YOLO model.
+
+Tumor Segmentation:
+Use the /detect_tumor_h5/ endpoint to obtain a tumor mask and view the results as an animated GIF.
+
+Diabetes Prediction:
+Fill out the DiabetesDetection form with the necessary predictor variables to receive a diabetes risk prediction along with an associated probability.
+
+Chatbot with RAG:
+Interact with the chatbot (found in chatbot.jsx) to ask symptom-related questions. The chatbot retrieves relevant textbook references via a FAISS index and uses the Groq API to provide evidence-based recommendations.
+
+Deployment
+Free Deployment Options
+Hugging Face Spaces:
+Deploy your FastAPI backend (or a Gradio/Streamlit app) on Hugging Face Spaces using a Docker container.
+
+Deta Micros:
+Host your backend on Deta Micros for a free deployment solution.
+
+Docker Deployment
+To containerize the application, create a Dockerfile in the repository root with the following content:
+
+dockerfile
+Copy
+FROM python:3.8-slim
+WORKDIR /app
+COPY backend/requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+COPY backend/ .
+EXPOSE 8000
+CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8000"]
+Then, build and run the container with the following commands:
+
+bash
+Copy
+docker build -t medfast-backend .
+docker run -p 8000:8000 medfast-backend
+Environment Variables
+If your application relies on environment variables (for instance, the Groq API key), create a .env file in the backend directory or configure them directly in your system. Example:
+
+bash
+Copy
+GROQ_API_KEY=your_groq_api_key_here
+You can use a package like python-dotenv to load these variables when needed.
+
+Contributing
+Contributions to MedFast are welcome! To contribute:
+
+Fork the repository.
+
+Create a new branch for your feature or bug fix.
+
+Make your changes and commit them.
+
+Submit a pull request for review.
+
+For significant changes, please open an issue first to discuss your ideas.
+
+License
+MedFast is licensed under the MIT License. See the LICENSE file for further details.
