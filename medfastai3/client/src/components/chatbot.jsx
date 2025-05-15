@@ -1,27 +1,33 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Send, X, MessageCircle, Plus, Activity } from "lucide-react";
+import { jsPDF } from "jspdf";
 import "./chatbot.css";
 
 const Chatbot = () => {
   const [messages, setMessages] = useState([
     { text: "Hi! How can I assist with your diagnosis?", sender: "bot" },
   ]);
-  // Maintain conversation history as a concatenated string
   const [conversationHistory, setConversationHistory] = useState("");
   const [input, setInput] = useState("");
   const [isOpen, setIsOpen] = useState(false);
   const [file, setFile] = useState(null);
+  
+  // Create a ref to the input element so we can focus it
+  const inputRef = useRef(null);
+
+  useEffect(() => {
+    if (isOpen && inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, [isOpen]);
 
   const updateHistory = (sender, text) => {
-    // Append new messages to conversationHistory with a newline separator
     const updatedHistory = conversationHistory + `\n${sender}: ${text}`;
     setConversationHistory(updatedHistory);
   };
 
   const sendMessage = async () => {
     if (!input.trim()) return;
-
-    // Update messages and conversation history with user's input
     const userMessage = { text: input, sender: "user" };
     setMessages((prev) => [...prev, userMessage]);
     updateHistory("User", input);
@@ -30,7 +36,9 @@ const Chatbot = () => {
       const response = await fetch("http://localhost:8000/ai_followup/", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ conversation_history: conversationHistory + `\nUser: ${input}` }),
+        body: JSON.stringify({
+          conversation_history: conversationHistory + `\nUser: ${input}`,
+        }),
       });
       const data = await response.json();
       const botMessage = { text: data.follow_up_question, sender: "bot" };
@@ -63,7 +71,6 @@ const Chatbot = () => {
   
       let botMessage;
       if (data.tumor_detected && data.tumors.length > 0) {
-        // Build a message string based on tumor detection results
         const tumorsInfo = data.tumors
           .map(
             (tumor, index) =>
@@ -84,11 +91,29 @@ const Chatbot = () => {
     }
   };
 
-  const diagnose = async () => {
-    // Optionally add a placeholder bot message
-    setMessages((prev) => [...prev, { text: "Diagnosing your condition...", sender: "bot" }]);
-    updateHistory("Bot", "Diagnosing your condition...");
+  // Function to generate a PDF report from the conversation history
+  const generatePDFReport = () => {
+    const doc = new jsPDF();
+    const lines = conversationHistory.split("\n");
+    let y = 10;
+    doc.setFontSize(12);
+    lines.forEach((line) => {
+      doc.text(line, 10, y);
+      y += 7;
+      if (y > 280) {
+        doc.addPage();
+        y = 10;
+      }
+    });
+    doc.save("chat_report.pdf");
+  };
 
+  const diagnose = async () => {
+    setMessages((prev) => [
+      ...prev,
+      { text: "Diagnosing your condition...", sender: "bot" },
+    ]);
+    updateHistory("Bot", "Diagnosing your condition...");
     try {
       const response = await fetch("http://localhost:8000/ai_diagnosis/", {
         method: "POST",
@@ -101,6 +126,14 @@ const Chatbot = () => {
       updateHistory("Bot", data.diagnosis);
     } catch (error) {
       console.error("Error diagnosing:", error);
+    }
+  };
+
+  // Handler for keypress events in the input field
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      sendMessage();
     }
   };
 
@@ -124,6 +157,8 @@ const Chatbot = () => {
               type="text"
               placeholder="Describe your symptoms..."
               value={input}
+              ref={inputRef}
+              onKeyDown={handleKeyDown}
               onChange={(e) => setInput(e.target.value)}
             />
             <button onClick={sendMessage}>
@@ -131,11 +166,21 @@ const Chatbot = () => {
             </button>
             <label className="upload-btn">
               <Plus size={18} />
-              <input type="file" onChange={handleFileChange} style={{ display: "none" }} />
+              <input
+                type="file"
+                onChange={handleFileChange}
+                style={{ display: "none" }}
+              />
             </label>
             <button className="diagnose-btn" onClick={diagnose}>
               <Activity size={18} />
             </button>
+            {/* Button to manually generate PDF report */}
+            <div className="pdf-report">
+              <button onClick={generatePDFReport} className="pdf-button">
+                Generate Report PDF
+              </button>
+            </div>
           </div>
         </div>
       ) : (

@@ -565,4 +565,5 @@ async def predict_diabetes(input_data: DiabetesInput):
         return JSONResponse(content={"error": "Failed to predict diabetes outcome"}, status_code=500)
 
 
-# To run the app, use: uvicorn app:app --reload
+# To run the app, use: uvicorn app:app --reload --port 8000
+
