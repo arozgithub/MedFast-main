@@ -35,7 +35,7 @@ const TumorDetection = () => {
                 const tumorsInfo = data.tumors
                     .map(
                         (tumor, index) =>
-                            `🧠 Tumor ${index + 1}\n🔬 Type: ${tumor.tumor_type}\n📏 Size: ${tumor.size}\n📍 Location: ${tumor.location}\n💡 Confidence: ${tumor.confidence}`
+                            `🧠 Tumor ${index + 1}\n🔬 Type: ${tumor.type}\n📏 Size: ${tumor.size}\n📍 Location: ${tumor.location}\n💡 Confidence: ${tumor.confidence}`
                     )
                     .join("\n\n");
 

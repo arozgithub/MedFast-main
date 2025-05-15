@@ -1,26 +1,124 @@
+@import './Themes.css';
+
 .navbar {
     display: flex; /* Use Flexbox for alignment */
     justify-content: space-between; /* Space between items */
     align-items: center; /* Center items vertically */
-    background-color: #1c1c1c; /* Navbar background color */
     padding: 1rem; /* Standard padding */
+    transition: all 0.3s ease;
 }
 
+/* Light mode navbar */
+body:not(.dark) .navbar {
+    background-color: #ffffff;
+    box-shadow: var(--light-shadow-sm);
+}
+
+/* Dark mode navbar */
+body.dark .navbar {
+    background-color: var(--dark-bg-secondary);
+    box-shadow: var(--dark-shadow-sm);
+}
 
 .navbar h1 {
-    color: #00bcd4; /* Navbar title color */
+    transition: color 0.3s ease;
+}
+
+/* Light mode navbar title */
+body:not(.dark) .navbar h1 {
+    color: var(--light-text-accent); /* Navbar title color light mode */
+}
+
+/* Dark mode navbar title */
+body.dark .navbar h1 {
+    color: var(--dark-text-accent); /* Navbar title color dark mode */
 }
 
 .navbar a {
-    color: #f4f4f4; /* Link color */
     text-decoration: none;
     padding: 0.5rem 1rem; /* Link padding */
-    transition: background-color 0.3s ease; /* Smooth transition for hover */
+    transition: all 0.3s ease; /* Smooth transition for hover */
+    border-radius: 0.25rem; /* Rounded corners */
 }
 
+/* Light mode navbar links */
+body:not(.dark) .navbar a {
+    color: var(--light-text-primary);
+}
 
-.navbar a:hover {
-    background-color: #00bcd4; /* Link hover color */
-    color: white; /* Link hover text color */
-    border-radius: 0.25rem; /* Rounded corners on hover */
+/* Dark mode navbar links */
+body.dark .navbar a {
+    color: var(--dark-text-primary);
+}
+
+/* Light mode hover */
+body:not(.dark) .navbar a:hover {
+    background-color: var(--light-text-accent);
+    color: white;
+}
+
+/* Dark mode hover */
+body.dark .navbar a:hover {
+    background-color: var(--dark-text-accent);
+    color: var(--dark-bg-primary);
+}
+
+/* General App styling */
+.App {
+    min-height: 100vh;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+body:not(.dark) .App {
+    background-color: var(--light-bg-primary);
+    color: var(--light-text-primary);
+}
+
+body.dark .App {
+    background-color: var(--dark-bg-primary);
+    color: var(--dark-text-primary);
+}
+
+/* Form elements theming */
+input, select, textarea, button {
+    transition: all 0.3s ease;
+}
+
+body:not(.dark) input, 
+body:not(.dark) select, 
+body:not(.dark) textarea {
+    background-color: var(--light-bg-secondary);
+    color: var(--light-text-primary);
+    border: 1px solid var(--light-border-color);
+}
+
+body.dark input, 
+body.dark select, 
+body.dark textarea {
+    background-color: var(--dark-bg-secondary);
+    color: var(--dark-text-primary);
+    border: 1px solid var(--dark-border-color);
+}
+
+/* Buttons */
+button {
+    cursor: pointer;
+}
+
+body:not(.dark) button {
+    background-color: var(--light-text-accent);
+    color: white;
+}
+
+body.dark button {
+    background-color: var(--dark-text-accent);
+    color: var(--dark-bg-primary);
+}
+
+body:not(.dark) button:hover {
+    background-color: #2980b9; /* Darker blue for light mode */
+}
+
+body.dark button:hover {
+    background-color: #90cdf4; /* Lighter blue for dark mode */
 }

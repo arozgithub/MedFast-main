@@ -1,0 +1,60 @@
+/* Themes.css - Shared color scheme for light and dark modes across the application */
+
+:root {
+  /* Light Theme Variables */
+  --light-bg-primary: #f5f7fa;
+  --light-bg-secondary: #ffffff;
+  --light-bg-tertiary: #f8f9fa;
+  --light-bg-accent: #e0e0e0;
+  
+  --light-text-primary: #2c3e50;
+  --light-text-secondary: #7f8c8d;
+  --light-text-accent: #3498db;
+  
+  --light-border-color: #e0e0e0;
+  --light-shadow-sm: 0 4px 15px rgba(0, 0, 0, 0.05);
+  --light-shadow-lg: 0 8px 25px rgba(0, 0, 0, 0.1);
+
+  /* Dark Theme Variables */
+  --dark-bg-primary: #1a202c;
+  --dark-bg-secondary: #2d3748;
+  --dark-bg-tertiary: #323c4e;
+  --dark-bg-accent: #4a5568;
+  
+  --dark-text-primary: #e2e8f0;
+  --dark-text-secondary: #a0aec0;
+  --dark-text-accent: #63b3ed;
+  
+  --dark-border-color: #4a5568;
+  --dark-shadow-sm: 0 4px 15px rgba(0, 0, 0, 0.2);
+  --dark-shadow-lg: 0 8px 25px rgba(0, 0, 0, 0.3);
+
+  /* Status Colors (Both Themes) */
+  --color-success: #27ae60;
+  --color-danger: #e74c3c;
+  --color-warning: #f39c12;
+  --color-info: #3498db;
+
+  /* Dark Theme Status Colors */
+  --dark-color-success: #68d391;
+  --dark-color-danger: #fc8181;
+  --dark-color-warning: #f6ad55; 
+  --dark-color-info: #63b3ed;
+}
+
+/* Global Styling for Dark Mode */
+body.dark {
+  background-color: var(--dark-bg-primary);
+  color: var(--dark-text-primary);
+}
+
+/* Global Styling for Light Mode */
+body:not(.dark) {
+  background-color: var(--light-bg-primary);
+  color: var(--light-text-primary);
+}
+
+/* Smooth transitions for all elements when theme changes */
+* {
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+}

@@ -7,6 +7,8 @@
     "@mui/material": "^6.4.7",
     "chart.js": "^4.4.7",
     "cra-template": "1.2.0",
+    "emailjs-com": "^3.2.0",
+    "firebase": "^11.6.1",
     "lucide-react": "^0.482.0",
     "medfastai3": "file:",
     "react": "^19.0.0",

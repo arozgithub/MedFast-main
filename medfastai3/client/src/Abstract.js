@@ -15,9 +15,9 @@ const Abstract = () => {
                 </p>
                 <Link to="/" className="button">Back to Home</Link>
             </div>
-            <footer className="footer">
+            {/* <footer className="footer">
                 <p>&copy; 2025 MedFast AI. All rights reserved.</p>
-            </footer>
+            </footer> */}
         </div>
     );
 };

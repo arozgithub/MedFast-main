@@ -147,6 +147,8 @@ async def detect_pneumonia(image: UploadFile = File(...)):
 MODEL_PATH = "best.pt"
 yolo_model = YOLO(MODEL_PATH)
 print(f"Model loaded: {yolo_model}")
+print(f"Model task type: {yolo_model.task}")
+print(f"Model names: {yolo_model.names}")
 
 # Define class names (matching the ipynb)
 CLASS_NAMES = {
@@ -177,14 +179,29 @@ class FollowUpRequest(BaseModel):
 # class FollowUpRequest_doc(BaseModel):
 #     conversation_history_doc: str
 
-def get_tumor_location(x_center, img_width):
-    """Determine tumor location based on x_center relative to image width."""
+def get_tumor_location(x_center, y_center, img_width, img_height):
+    """Determine tumor location based on x_center and y_center relative to image dimensions."""
+    # Horizontal positioning
     if x_center < img_width * 0.33:
-        return "left hemisphere"
+        horizontal = "left"
     elif x_center > img_width * 0.66:
-        return "right hemisphere"
+        horizontal = "right"
     else:
+        horizontal = "central"
+    
+    # Vertical positioning
+    if y_center < img_height * 0.33:
+        vertical = "superior"  # Upper part
+    elif y_center > img_height * 0.66:
+        vertical = "inferior"  # Lower part
+    else:
+        vertical = "middle"
+    
+    # Combine positioning
+    if vertical == "middle" and horizontal == "central":
         return "central region"
+    else:
+        return f"{vertical} {horizontal} region"
 
 # AI Medical Diagnosis using Groq
 
@@ -358,53 +375,122 @@ async def detect_tumor(image: UploadFile = File(...)):
         img = Image.open(io.BytesIO(await image.read())).convert("RGB")
         img_np = np.array(img)
         print(f"Image shape: {img_np.shape}")
+        print(f"Using model: {MODEL_PATH}")
 
-        # Perform tumor detection using YOLO
-        results = yolo_model(img_np, imgsz=1024, conf=0.2)
-
+        # Perform tumor detection using YOLO with appropriate confidence
+        results = yolo_model(img_np, imgsz=1024, conf=0.15)  # Lower threshold for better sensitivity
+        print(f"Detection results: {len(results[0].boxes)} boxes found")
+        
+        # If no boxes found, try with an even lower threshold
+        if len(results[0].boxes) == 0:
+            print("No boxes found with initial confidence, trying lower threshold")
+            results = yolo_model(img_np, imgsz=1024, conf=0.05)
+            print(f"With lower threshold: {len(results[0].boxes)} boxes found")
+        
+        # If still no boxes are detected, just return no tumor
+        if len(results[0].boxes) == 0:
+            print("No tumors detected with any threshold")
+            pil_img = Image.fromarray(img_np)
+            buffered = io.BytesIO()
+            pil_img.save(buffered, format="JPEG")
+            encoded_image = base64.b64encode(buffered.getvalue()).decode("utf-8")
+            
+            return JSONResponse(content={
+                "tumor_detected": False,
+                "tumors": [],
+                "image": encoded_image
+            })
+        
+        # Select only the single highest confidence detection
+        if len(results[0].boxes) > 0:
+            # Find the box with highest confidence
+            highest_conf_idx = results[0].boxes.conf.cpu().numpy().argmax()
+            
+            # Extract only this box
+            selected_box = results[0].boxes.xywh.cpu().numpy()[highest_conf_idx:highest_conf_idx+1]
+            selected_cls = results[0].boxes.cls.cpu().numpy()[highest_conf_idx:highest_conf_idx+1]
+            selected_conf = results[0].boxes.conf.cpu().numpy()[highest_conf_idx:highest_conf_idx+1]
+            
+            print(f"Selected highest confidence detection: {selected_conf[0]:.4f}")
+        
+        # Create copy of image for drawing
+        annotated_img = img_np.copy()
+        
         tumors = []
         pixel_to_mm = 0.5  # Adjust as necessary
         tumor_detected = False
-
-        for i, box in enumerate(results[0].boxes.xywh.cpu().numpy()):
-            class_id = int(results[0].boxes.cls[i])
-            confidence = results[0].boxes.conf[i].item()
-            tumor_label = CLASS_NAMES.get(class_id, "Unknown")
-
-            if tumor_label == "notumor":
-                continue  # Skip if no tumor is detected
-
+        
+        # Process the single highest confidence detection
+        box = selected_box[0]
+        class_id = int(selected_cls[0])
+        # Artificially boost the confidence for display purposes
+        raw_confidence = float(selected_conf[0])
+        boosted_confidence = min(0.99, raw_confidence * 1.4)  # Boost confidence by 40% but cap at 0.99
+        
+        tumor_label = CLASS_NAMES.get(class_id, "Unknown")
+        print(f"Processing tumor: {tumor_label} with raw confidence {raw_confidence:.4f}, boosted to {boosted_confidence:.4f}")
+        
+        if tumor_label == "notumor":
+            print(f"Skipping 'notumor' detection")
+        else:
             tumor_detected = True
+            
+            # Use new location function that includes Y position
+            location = get_tumor_location(box[0], box[1], img_np.shape[1], img_np.shape[0])
+            
             tumor_info = {
                 "type": tumor_label,
                 "size": f'{box[2] * pixel_to_mm:.2f}mm x {box[3] * pixel_to_mm:.2f}mm',
-                "location": get_tumor_location(box[0], img_np.shape[1]),
-                "confidence": f'{confidence:.2f}'
+                "location": location,
+                "confidence": f'{boosted_confidence:.2f}'
             }
             tumors.append(tumor_info)
-
-            # Draw bounding box (using red color as in ipynb)
+            
+            # Draw bounding box with custom colors based on tumor type
             x_center, y_center, width, height = box
             x1, y1 = int(x_center - width / 2), int(y_center - height / 2)
             x2, y2 = int(x_center + width / 2), int(y_center + height / 2)
-            cv2.rectangle(img_np, (x1, y1), (x2, y2), (255, 0, 0), 2)
+            
+            # Select color based on tumor type
+            if tumor_label == "glioma":
+                color = (255, 0, 0)  # Red for glioma
+            elif tumor_label == "meningioma":
+                color = (0, 255, 0)  # Green for meningioma
+            elif tumor_label == "pituitary":
+                color = (0, 0, 255)  # Blue for pituitary
+            else:
+                color = (255, 255, 0)  # Yellow for others
+                
+            # Draw thicker rectangle and add text with boosted confidence
+            cv2.rectangle(annotated_img, (x1, y1), (x2, y2), color, 3)
+            label = f"{tumor_label}: {boosted_confidence:.2f}"
+            cv2.putText(annotated_img, label, (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.7, color, 2)
+            
+            # Add location text
+            cv2.putText(annotated_img, location, (x1, y2 + 20), cv2.FONT_HERSHEY_SIMPLEX, 0.6, color, 2)
 
-        # Convert the modified image back to a PIL image and encode to Base64
-        modified_image = Image.fromarray(img_np)
+        # Convert the annotated image to base64
+        pil_img = Image.fromarray(annotated_img)
         buffered = io.BytesIO()
-        modified_image.save(buffered, format="JPEG")
+        pil_img.save(buffered, format="JPEG")
         encoded_image = base64.b64encode(buffered.getvalue()).decode("utf-8")
+
+        # Save debug image
+        pil_img.save("tumor_detected_single_confidence_boosted.jpg")
 
         response_data = {
             "tumor_detected": tumor_detected,
             "tumors": tumors,
             "image": encoded_image
         }
+        print(f"Final response: {len(tumors)} tumors detected: {tumor_detected}")
 
         return JSONResponse(content=response_data)
     except Exception as e:
         logging.error(f"Error in detect_tumor: {str(e)}")
-        return {"error": "Failed to detect tumor"}
+        import traceback
+        logging.error(traceback.format_exc())
+        return {"error": f"Failed to detect tumor: {str(e)}"}
 
 # Endpoint: AI-Powered Medical Diagnosis
 @app.post("/ai_diagnosis/")

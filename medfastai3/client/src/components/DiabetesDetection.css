@@ -1,89 +1,213 @@
+@import '../Themes.css';
+
 /* Overall container for diabetes prediction and chatbot */
-.diabetes-container {
-    display: flex;
-    flex-wrap: nowrap;
-    width: 100%;
-    min-height: 100vh;
-  }
-  
-  /* Diabetes Content (Left Column) */
-  .diabetes-content {
-    flex: 1;
-    padding: 2rem;
-    display: flex;
+.segmentation-container {
+  display: flex;
+  position: relative;
+  min-height: 100vh;
+  transition: all 0.3s ease;
+}
+
+body:not(.dark) .segmentation-container {
+  background-color: var(--light-bg-primary);
+}
+
+body.dark .segmentation-container {
+  background-color: var(--dark-bg-primary);
+}
+
+.segmentation-content {
+  flex: 1;
+  padding: 20px;
+  transition: all 0.3s ease;
+  margin-left: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start; /* Align content to the top */
+  padding-top: 2rem; /* Add padding to the top */
+}
+
+.segmentation-content.shifted {
+  margin-left: 250px;
+}
+
+/* Upload Container */
+.upload-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  margin-top: 2rem; /* Ensure spacing from top */
+  align-self: flex-start; /* Position at the top of the flex container */
+}
+
+/* Form styling */
+.diabetes-form {
+  width: 100%;
+  max-width: 600px;
+  padding: 1.5rem;
+  border-radius: 10px;
+  margin-bottom: 2rem;
+  transition: all 0.3s ease;
+  margin-top: 0; /* Remove any top margin */
+}
+
+body:not(.dark) .diabetes-form {
+  background-color: var(--light-bg-secondary);
+  box-shadow: var(--light-shadow-sm);
+}
+
+body.dark .diabetes-form {
+  background-color: var(--dark-bg-secondary);
+  box-shadow: var(--dark-shadow-sm);
+}
+
+.form-group {
+  margin-bottom: 1rem;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  transition: color 0.3s ease;
+}
+
+body:not(.dark) .form-group label {
+  color: var(--light-text-primary);
+}
+
+body.dark .form-group label {
+  color: var(--dark-text-primary);
+}
+
+.form-group input {
+  width: 100%;
+  padding: 0.75rem;
+  border-radius: 5px;
+  transition: all 0.3s ease;
+}
+
+body:not(.dark) .form-group input {
+  background-color: var(--light-bg-tertiary);
+  border: 1px solid var(--light-border-color);
+  color: var(--light-text-primary);
+}
+
+body.dark .form-group input {
+  background-color: var(--dark-bg-tertiary);
+  border: 1px solid var(--dark-border-color);
+  color: var(--dark-text-primary);
+}
+
+body:not(.dark) .form-group input:focus {
+  outline: none;
+  border-color: var(--light-text-accent);
+}
+
+body.dark .form-group input:focus {
+  outline: none;
+  border-color: var(--dark-text-accent);
+}
+
+.submit-button {
+  display: block;
+  width: 100%;
+  padding: 0.8rem;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: 600;
+  margin-top: 1.5rem;
+  transition: all 0.3s ease;
+}
+
+body:not(.dark) .submit-button {
+  background-color: var(--light-text-accent);
+  color: white;
+}
+
+body.dark .submit-button {
+  background-color: var(--dark-text-accent);
+  color: var(--dark-bg-primary);
+}
+
+body:not(.dark) .submit-button:hover {
+  background-color: #2980b9;
+}
+
+body.dark .submit-button:hover {
+  background-color: #90cdf4;
+}
+
+/* Sidebar Toggle */
+.sidebar-toggle {
+  position: fixed;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 1000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 30px;
+  height: 60px;
+  cursor: pointer;
+  border: none;
+  transition: all 0.3s ease;
+}
+
+.sidebar-toggle.open {
+  left: 250px;
+}
+
+.sidebar-toggle.closed {
+  left: 0;
+}
+
+body:not(.dark) .sidebar-toggle {
+  background-color: var(--light-text-accent);
+  color: white;
+}
+
+body.dark .sidebar-toggle {
+  background-color: var(--dark-text-accent);
+  color: var(--dark-bg-primary);
+}
+
+/* Result display */
+.result-display {
+  padding: 1.5rem;
+  border-radius: 10px;
+  width: 100%;
+  max-width: 600px;
+  margin-top: 1.5rem;
+  transition: all 0.3s ease;
+}
+
+body:not(.dark) .result-display {
+  background-color: var(--light-bg-secondary);
+  color: var(--light-text-primary);
+  box-shadow: var(--light-shadow-sm);
+}
+
+body.dark .result-display {
+  background-color: var(--dark-bg-secondary);
+  color: var(--dark-text-primary);
+  box-shadow: var(--dark-shadow-sm);
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .segmentation-container {
     flex-direction: column;
-    align-items: center;
-    justify-content: flex-start; /* content at the top */
-    text-align: center;
   }
   
-  /* Optional: when sidebar is open, shift content accordingly */
-  .diabetes-content.shifted {
-    margin-left: 250px; /* adjust based on your sidebar width */
+  .segmentation-content.shifted {
+    margin-left: 0;
   }
   
-  /* Header Styling */
-  .diabetes-content h1 {
-    margin-top: 20px;
-    margin-bottom: 1rem;
+  .sidebar-toggle.open {
+    left: 200px;
   }
-  
-  /* Diabetes Form Styling */
-  .diabetes-form {
-    width: 100%;
-    max-width: 500px;  /* Limit form width */
-    padding: 2rem;     /* Adjust padding as needed */
-    margin: 0 auto;
-    background-color: #ffffff;
-    border-radius: 8px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-  }
-  
-  /* Form Group Styling */
-  .form-group {
-    margin-bottom: 1rem;
-    display: flex;
-    flex-direction: column;
-    text-align: left;
-  }
-  
-  .form-group label {
-    margin-bottom: 0.5rem;
-    font-weight: 600;
-  }
-  
-  .form-group input {
-    padding: 0.5rem;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-  }
-  
-  /* Submit Button Styling */
-  .submit-button {
-    width: 100%;
-    padding: 0.75rem;
-    background-color: #007bff;
-    color: #fff;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    margin-top: 1rem;
-    transition: background-color 0.3s ease;
-  }
-  
-  .submit-button:hover {
-    background-color: #0056b3;
-  }
-  
-  /* Result Display Section */
-  .diabetes-content .mt-4 {
-    width: 100%;
-    max-width: 500px;
-    margin: 1rem auto 0;
-    padding: 1rem;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    background-color: #f4f4f4;
-    text-align: left;
-  }
-  
+}

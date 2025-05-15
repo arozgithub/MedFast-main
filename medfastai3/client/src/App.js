@@ -1,7 +1,6 @@
 import React from 'react';
-import Header from './components/Header'; // Import the Header component
 import Navbar from './components/Navbar'; // Import the Navbar component
-import { BrowserRouter as Router, Route, Routes, Link } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import Segmentation from './components/Segmentation';
 import TumorDetection from './components/TumorDetection';
 import DiabetesDetection from './components/DiabetesDetection';
@@ -11,23 +10,13 @@ import Login from './Login';
 import Signup from './Signup';
 import Contact from './Contact';
 import Abstract from './Abstract';
-import Dashboard from './Dashboard'; 
-import Sidebar from './components/Sidebar';// Import the Dashboard component
+import Dashboard from './Dashboard';
 import XRayAnalysis from './components/XRayAnalysis';
 import Doctor from './components/Doctor';
-
-
 
 function App() {
   return (
     <Router>
-     
-      <div className="App" style={{ margin: '20px 0' }}>
-     
-
-      </div>
-       {/* <Header /> */}
-      <div style={{ margin: '20px 0' }}></div> {/* Adding space between navbar and heading */}
       <Navbar />
       <Routes>
         <Route path="/" element={<Home />} />
@@ -42,8 +31,6 @@ function App() {
         <Route path="/diabetes-detection" element={<DiabetesDetection />} />
         <Route path="/doctor" element={<Doctor/>} />
       </Routes>
-      {/* <Sidebar/> */}
-      
     </Router>
   );
 }

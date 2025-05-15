@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Send, X, MessageCircle, Plus, Activity } from "lucide-react";
+import { Send, X, MessageCircle, Plus, Activity, Mic, Volume2, VolumeX } from "lucide-react";
 import { jsPDF } from "jspdf";
 import "./chatbot.css";
 
@@ -11,14 +11,52 @@ const Chatbot = () => {
   const [input, setInput] = useState("");
   const [isOpen, setIsOpen] = useState(false);
   const [file, setFile] = useState(null);
+  const [isListening, setIsListening] = useState(false);
+  const [isSpeaking, setIsSpeaking] = useState(false);
+  const [voiceEnabled, setVoiceEnabled] = useState(true);
   
   // Create a ref to the input element so we can focus it
   const inputRef = useRef(null);
+  const recognitionRef = useRef(null);
+  const speechSynthesisRef = useRef(window.speechSynthesis);
 
   useEffect(() => {
     if (isOpen && inputRef.current) {
       inputRef.current.focus();
     }
+    
+    if ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window) {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      recognitionRef.current = new SpeechRecognition();
+      recognitionRef.current.continuous = false;
+      recognitionRef.current.interimResults = false;
+      
+      recognitionRef.current.onresult = (event) => {
+        const transcript = event.results[0][0].transcript;
+        setInput(transcript);
+        setTimeout(() => {
+          sendMessage(transcript);
+        }, 500);
+      };
+      
+      recognitionRef.current.onend = () => {
+        setIsListening(false);
+      };
+      
+      recognitionRef.current.onerror = (event) => {
+        console.error('Speech recognition error', event.error);
+        setIsListening(false);
+      };
+    }
+    
+    return () => {
+      if (recognitionRef.current) {
+        recognitionRef.current.abort();
+      }
+      if (speechSynthesisRef.current) {
+        speechSynthesisRef.current.cancel();
+      }
+    };
   }, [isOpen]);
 
   const updateHistory = (sender, text) => {
@@ -26,28 +64,104 @@ const Chatbot = () => {
     setConversationHistory(updatedHistory);
   };
 
-  const sendMessage = async () => {
-    if (!input.trim()) return;
-    const userMessage = { text: input, sender: "user" };
+  const sendMessage = async (voiceInput = null) => {
+    const messageText = voiceInput || input;
+    if (!messageText.trim()) return;
+    
+    const userMessage = { text: messageText, sender: "user" };
     setMessages((prev) => [...prev, userMessage]);
-    updateHistory("User", input);
+    updateHistory("User", messageText);
 
     try {
       const response = await fetch("http://localhost:8000/ai_followup/", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          conversation_history: conversationHistory + `\nUser: ${input}`,
+          conversation_history: conversationHistory + `\nUser: ${messageText}`,
         }),
       });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
       const data = await response.json();
-      const botMessage = { text: data.follow_up_question, sender: "bot" };
+      const responseText = data.follow_up_question || "I'm not sure how to respond to that.";
+      const botMessage = { text: responseText, sender: "bot" };
       setMessages((prev) => [...prev, botMessage]);
-      updateHistory("Bot", data.follow_up_question);
+      updateHistory("Bot", responseText);
+      
+      if (voiceEnabled) {
+        speakText(responseText);
+      }
     } catch (error) {
       console.error("Error sending message:", error);
+      const errorMessage = { text: "Sorry, I'm having trouble connecting to the server right now.", sender: "bot" };
+      setMessages((prev) => [...prev, errorMessage]);
+      updateHistory("Bot", errorMessage.text);
+      
+      if (voiceEnabled) {
+        speakText(errorMessage.text);
+      }
     }
     setInput("");
+  };
+
+  const startListening = () => {
+    if (recognitionRef.current) {
+      try {
+        recognitionRef.current.start();
+        setIsListening(true);
+      } catch (error) {
+        console.error("Error starting speech recognition:", error);
+      }
+    } else {
+      alert("Speech recognition is not supported in your browser.");
+    }
+  };
+
+  const stopListening = () => {
+    if (recognitionRef.current) {
+      recognitionRef.current.stop();
+      setIsListening(false);
+    }
+  };
+
+  const toggleVoice = () => {
+    setVoiceEnabled(!voiceEnabled);
+    if (isSpeaking && !voiceEnabled) {
+      speechSynthesisRef.current.cancel();
+      setIsSpeaking(false);
+    }
+  };
+
+  const speakText = (text) => {
+    if (!voiceEnabled) return;
+    
+    speechSynthesisRef.current.cancel();
+    
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.rate = 1.0;
+    utterance.pitch = 1.0;
+    utterance.volume = 1.0;
+    
+    const voices = speechSynthesisRef.current.getVoices();
+    const preferredVoice = voices.find(voice => 
+      voice.name.includes("Female") || voice.name.includes("Google") || voice.lang === 'en-US'
+    );
+    
+    if (preferredVoice) {
+      utterance.voice = preferredVoice;
+    }
+    
+    utterance.onstart = () => setIsSpeaking(true);
+    utterance.onend = () => setIsSpeaking(false);
+    utterance.onerror = (event) => {
+      console.error("Speech synthesis error:", event);
+      setIsSpeaking(false);
+    };
+    
+    speechSynthesisRef.current.speak(utterance);
   };
 
   const handleFileChange = async (event) => {
@@ -83,6 +197,10 @@ const Chatbot = () => {
       }
       setMessages((prev) => [...prev, botMessage]);
       updateHistory("Bot", botMessage.text);
+      
+      if (voiceEnabled) {
+        speakText(botMessage.text);
+      }
     } catch (error) {
       console.error("Error uploading file:", error);
       const errorMessage = { text: "⚠️ Error processing the image.", sender: "bot" };
@@ -120,12 +238,29 @@ const Chatbot = () => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ conversation_history: conversationHistory }),
       });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
       const data = await response.json();
-      const diagnosisMessage = { text: data.diagnosis, sender: "bot" };
+      const diagnosisText = data.diagnosis || "I couldn't generate a diagnosis at this time.";
+      const diagnosisMessage = { text: diagnosisText, sender: "bot" };
       setMessages((prev) => [...prev, diagnosisMessage]);
-      updateHistory("Bot", data.diagnosis);
+      updateHistory("Bot", diagnosisText);
+      
+      if (voiceEnabled) {
+        speakText(diagnosisText);
+      }
     } catch (error) {
       console.error("Error diagnosing:", error);
+      const errorMessage = { text: "Sorry, I'm having trouble connecting to the diagnosis service.", sender: "bot" };
+      setMessages((prev) => [...prev, errorMessage]);
+      updateHistory("Bot", errorMessage.text);
+      
+      if (voiceEnabled) {
+        speakText(errorMessage.text);
+      }
     }
   };
 
@@ -143,6 +278,15 @@ const Chatbot = () => {
         <div className="chatbot-box">
           <div className="chatbot-header text-center">
             <span className="text-red-400">AI Medical Assistant</span>
+            <div className="voice-controls">
+              <button 
+                onClick={toggleVoice} 
+                title={voiceEnabled ? "Disable voice" : "Enable voice"} 
+                className="voice-toggle"
+              >
+                {voiceEnabled ? <Volume2 size={16} /> : <VolumeX size={16} />}
+              </button>
+            </div>
             <X className="close-btn" onClick={() => setIsOpen(false)} />
           </div>
           <div className="chatbot-messages">
@@ -152,34 +296,45 @@ const Chatbot = () => {
               </div>
             ))}
           </div>
-          <div className="chatbot-input">
-            <input
-              type="text"
-              placeholder="Describe your symptoms..."
-              value={input}
-              ref={inputRef}
-              onKeyDown={handleKeyDown}
-              onChange={(e) => setInput(e.target.value)}
-            />
-            <button onClick={sendMessage}>
-              <Send size={18} />
-            </button>
-            <label className="upload-btn">
-              <Plus size={18} />
+          <div className="chatbot-actions">
+            <div className="chatbot-input">
               <input
-                type="file"
-                onChange={handleFileChange}
-                style={{ display: "none" }}
+                type="text"
+                placeholder={isListening ? "Listening..." : "Describe your symptoms..."}
+                value={input}
+                ref={inputRef}
+                onKeyDown={handleKeyDown}
+                onChange={(e) => setInput(e.target.value)}
+                disabled={isListening}
               />
-            </label>
-            <button className="diagnose-btn" onClick={diagnose}>
-              <Activity size={18} />
-            </button>
-            {/* Button to manually generate PDF report */}
-            <div className="pdf-report">
-              <button onClick={generatePDFReport} className="pdf-button">
-                Generate Report PDF
-              </button>
+              <div className="button-container">
+                <button onClick={() => sendMessage()} disabled={isListening || !input.trim()} className="send-btn">
+                  <Send size={18} />
+                </button>
+                <button 
+                  onClick={isListening ? stopListening : startListening}
+                  className={`mic-btn ${isListening ? 'active' : ''}`}
+                  title={isListening ? "Stop listening" : "Start voice input"}
+                >
+                  <Mic size={18} />
+                </button>
+                <label className="upload-btn">
+                  <Plus size={18} />
+                  <input
+                    type="file"
+                    onChange={handleFileChange}
+                    style={{ display: "none" }}
+                  />
+                </label>
+                <button className="diagnose-btn" onClick={diagnose} title="Get diagnosis">
+                  <Activity size={18} />
+                </button>
+              </div>
+              <div className="pdf-report">
+                <button onClick={generatePDFReport} className="pdf-button">
+                  Generate Report PDF
+                </button>
+              </div>
             </div>
           </div>
         </div>

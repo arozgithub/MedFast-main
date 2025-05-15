@@ -61,7 +61,7 @@ const DiabetesDetection = () => {
   };
 
   return (
-    <div className="diabetes-container">
+    <div className="segmentation-container">
       {/* Sidebar */}
       <Sidebar isOpen={isSidebarOpen} />
       <button 
@@ -72,92 +72,94 @@ const DiabetesDetection = () => {
       </button>
 
       {/* Main Content */}
-      <div className={`diabetes-content ${isSidebarOpen ? 'shifted' : ''}`}>
+      <div className={`segmentation-content ${isSidebarOpen ? 'shifted' : ''}`}>
         <h1 className="text-2xl font-bold mb-4">Diabetes Prediction</h1>
-        <form onSubmit={handleSubmit} className="diabetes-form">
-          <div className="form-group">
-            <label>Pregnancies:</label>
-            <input 
-              type="number" 
-              value={pregnancies} 
-              onChange={(e) => setPregnancies(e.target.value)} 
-              required 
-            />
-          </div>
-          <div className="form-group">
-            <label>Glucose:</label>
-            <input 
-              type="number" 
-              value={glucose} 
-              onChange={(e) => setGlucose(e.target.value)} 
-              required 
-            />
-          </div>
-          <div className="form-group">
-            <label>Blood Pressure:</label>
-            <input 
-              type="number" 
-              value={bloodPressure} 
-              onChange={(e) => setBloodPressure(e.target.value)} 
-              required 
-            />
-          </div>
-          <div className="form-group">
-            <label>Skin Thickness:</label>
-            <input 
-              type="number" 
-              value={skinThickness} 
-              onChange={(e) => setSkinThickness(e.target.value)} 
-              required 
-            />
-          </div>
-          <div className="form-group">
-            <label>Insulin:</label>
-            <input 
-              type="number" 
-              value={insulin} 
-              onChange={(e) => setInsulin(e.target.value)} 
-              required 
-            />
-          </div>
-          <div className="form-group">
-            <label>BMI:</label>
-            <input 
-              type="number" 
-              step="0.1" 
-              value={BMI} 
-              onChange={(e) => setBMI(e.target.value)} 
-              required 
-            />
-          </div>
-          <div className="form-group">
-            <label>Diabetes Pedigree Function:</label>
-            <input 
-              type="number" 
-              step="0.01" 
-              value={diabetesPedigreeFunction} 
-              onChange={(e) => setDiabetesPedigreeFunction(e.target.value)} 
-              required 
-            />
-          </div>
-          <div className="form-group">
-            <label>Age:</label>
-            <input 
-              type="number" 
-              value={age} 
-              onChange={(e) => setAge(e.target.value)} 
-              required 
-            />
-          </div>
-          <button type="submit" className="submit-button">Predict</button>
-        </form>
+        <div className="upload-container">
+          <form onSubmit={handleSubmit} className="diabetes-form">
+            <div className="form-group">
+              <label>Pregnancies:</label>
+              <input 
+                type="number" 
+                value={pregnancies} 
+                onChange={(e) => setPregnancies(e.target.value)} 
+                required 
+              />
+            </div>
+            <div className="form-group">
+              <label>Glucose:</label>
+              <input 
+                type="number" 
+                value={glucose} 
+                onChange={(e) => setGlucose(e.target.value)} 
+                required 
+              />
+            </div>
+            <div className="form-group">
+              <label>Blood Pressure:</label>
+              <input 
+                type="number" 
+                value={bloodPressure} 
+                onChange={(e) => setBloodPressure(e.target.value)} 
+                required 
+              />
+            </div>
+            <div className="form-group">
+              <label>Skin Thickness:</label>
+              <input 
+                type="number" 
+                value={skinThickness} 
+                onChange={(e) => setSkinThickness(e.target.value)} 
+                required 
+              />
+            </div>
+            <div className="form-group">
+              <label>Insulin:</label>
+              <input 
+                type="number" 
+                value={insulin} 
+                onChange={(e) => setInsulin(e.target.value)} 
+                required 
+              />
+            </div>
+            <div className="form-group">
+              <label>BMI:</label>
+              <input 
+                type="number" 
+                step="0.1" 
+                value={BMI} 
+                onChange={(e) => setBMI(e.target.value)} 
+                required 
+              />
+            </div>
+            <div className="form-group">
+              <label>Diabetes Pedigree Function:</label>
+              <input 
+                type="number" 
+                step="0.01" 
+                value={diabetesPedigreeFunction} 
+                onChange={(e) => setDiabetesPedigreeFunction(e.target.value)} 
+                required 
+              />
+            </div>
+            <div className="form-group">
+              <label>Age:</label>
+              <input 
+                type="number" 
+                value={age} 
+                onChange={(e) => setAge(e.target.value)} 
+                required 
+              />
+            </div>
+            <button type="submit" className="submit-button">Predict</button>
+          </form>
 
-        {/* Result Display Section */}
-        {result && (
-          <div className="mt-4 p-4 border rounded bg-gray-100 w-full text-left">
-            {result}
-          </div>
-        )}
+          {/* Result Display Section */}
+          {result && (
+            <div className="result-display">
+              {result}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Chatbot Section */}

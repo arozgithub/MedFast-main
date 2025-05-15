@@ -1,56 +1,161 @@
-/* Center the signup container */
+@import './Themes.css';
+
 .signup-container {
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    height: 100vh; /* Full viewport height */
-    
+    min-height: 100vh;
     padding: 20px;
+    transition: all 0.3s ease;
 }
 
-h2 {
+body:not(.dark) .signup-container {
+    background-color: var(--light-bg-primary);
+}
+
+body.dark .signup-container {
+    background-color: var(--dark-bg-primary);
+}
+
+.signup-container h2 {
     font-size: 2rem;
-    color: #333;
     margin-bottom: 20px;
+    transition: color 0.3s ease;
 }
 
-form {
-    background-color: #fff;
+body:not(.dark) .signup-container h2 {
+    color: var(--light-text-primary);
+}
+
+body.dark .signup-container h2 {
+    color: var(--dark-text-primary);
+}
+
+.signup-container form {
     padding: 20px;
     border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     width: 100%;
     max-width: 400px;
+    transition: all 0.3s ease;
 }
 
-input {
+body:not(.dark) .signup-container form {
+    background-color: var(--light-bg-secondary);
+    box-shadow: var(--light-shadow-sm);
+}
+
+body.dark .signup-container form {
+    background-color: var(--dark-bg-secondary);
+    box-shadow: var(--dark-shadow-sm);
+}
+
+.signup-container input {
     width: 100%;
     padding: 12px;
     margin: 10px 0;
     border-radius: 5px;
-    border: 1px solid #ccc;
     font-size: 1rem;
+    transition: all 0.3s ease;
 }
 
-button {
+body:not(.dark) .signup-container input {
+    background-color: var(--light-bg-tertiary);
+    border: 1px solid var(--light-border-color);
+    color: var(--light-text-primary);
+}
+
+body.dark .signup-container input {
+    background-color: var(--dark-bg-tertiary);
+    border: 1px solid var(--dark-border-color);
+    color: var(--dark-text-primary);
+}
+
+body:not(.dark) .signup-container input:focus {
+    outline: none;
+    border-color: var(--light-text-accent);
+}
+
+body.dark .signup-container input:focus {
+    outline: none;
+    border-color: var(--dark-text-accent);
+}
+
+.signup-container button {
     width: 100%;
     padding: 12px;
-    background-color: #333;
-    color: #fff;
     border: none;
     border-radius: 5px;
     font-size: 1.1rem;
     cursor: pointer;
+    margin-top: 10px;
+    transition: all 0.3s ease;
 }
 
-button:hover {
-    background-color: #555;
+body:not(.dark) .signup-container button {
+    background-color: var(--light-text-accent);
+    color: white;
 }
 
-p {
-    color: #333;
+body.dark .signup-container button {
+    background-color: var(--dark-text-accent);
+    color: var(--dark-bg-primary);
+}
+
+body:not(.dark) .signup-container button:hover {
+    background-color: #2980b9;
+}
+
+body.dark .signup-container button:hover {
+    background-color: #90cdf4;
+}
+
+.signup-container p {
     font-size: 1rem;
     margin-top: 10px;
     text-align: center;
+    transition: color 0.3s ease;
+}
+
+body:not(.dark) .signup-container p {
+    color: var(--light-text-secondary);
+}
+
+body.dark .signup-container p {
+    color: var(--dark-text-secondary);
+}
+
+.signup-container a {
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+body:not(.dark) .signup-container a {
+    color: var(--light-text-accent);
+}
+
+body.dark .signup-container a {
+    color: var(--dark-text-accent);
+}
+
+.signup-container a:hover {
+    text-decoration: underline;
+}
+
+.error-message {
+    color: var(--color-danger);
+    margin-bottom: 1rem;
+    text-align: center;
+    padding: 0.5rem;
+    border-radius: 5px;
+    transition: all 0.3s ease;
+}
+
+body:not(.dark) .error-message {
+    background-color: rgba(231, 76, 60, 0.1);
+}
+
+body.dark .error-message {
+    background-color: rgba(231, 76, 60, 0.2);
+    color: var(--dark-color-danger);
 }

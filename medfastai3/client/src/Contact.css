@@ -6,95 +6,450 @@
     font-family: 'Poppins', sans-serif;
 }
 
-
+@import './Themes.css';
 
 /* Contact Page Container */
 .contact-page {
     display: flex;
     flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    width: 100%;
-    min-height: 60vh;
+    min-height: 100vh;
+    padding: 20px;
+    transition: all 0.3s ease;
+}
+
+body:not(.dark) .contact-page {
+    background-color: var(--light-bg-primary);
+}
+
+body.dark .contact-page {
+    background-color: var(--dark-bg-primary);
 }
 
 /* Contact Form Box */
 .contact-container {
-    background: rgba(255, 255, 255, 0.05);
+    min-height: 100vh;
     padding: 2rem;
+    transition: all 0.3s ease;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+body:not(.dark) .contact-container {
+    background-color: var(--light-bg-primary);
+    color: var(--light-text-primary);
+}
+
+body.dark .contact-container {
+    background-color: var(--dark-bg-primary);
+    color: var(--dark-text-primary);
+}
+
+.contact-content {
+    max-width: 500px; /* Reduced width for smaller card */
+    width: 100%;
+    padding: 1.5rem; /* Smaller padding */
     border-radius: 10px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+    transition: all 0.3s ease;
+}
+
+body:not(.dark) .contact-content {
+    background-color: var(--light-bg-secondary);
+    box-shadow: var(--light-shadow-sm);
+}
+
+body.dark .contact-content {
+    background-color: var(--dark-bg-secondary);
+    box-shadow: var(--dark-shadow-sm);
+}
+
+.contact-header {
     text-align: center;
+    margin-bottom: 1.5rem; /* Reduced margin */
+}
+
+.contact-header h1 {
+    font-size: 1.8rem; /* Smaller heading */
+    margin-bottom: 0.5rem; /* Reduced margin */
+    transition: color 0.3s ease;
+}
+
+body:not(.dark) .contact-header h1 {
+    color: var(--light-text-primary);
+}
+
+body.dark .contact-header h1 {
+    color: var(--dark-text-primary);
+}
+
+.contact-header p {
+    font-size: 0.9rem; /* Smaller text */
+    transition: color 0.3s ease;
+}
+
+body:not(.dark) .contact-header p {
+    color: var(--light-text-secondary);
+}
+
+body.dark .contact-header p {
+    color: var(--dark-text-secondary);
+}
+
+.contact-form {
+    margin-top: 1.5rem; /* Reduced margin */
+}
+
+.form-group {
+    margin-bottom: 1rem; /* Reduced margin */
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.3rem; /* Reduced margin */
+    transition: color 0.3s ease;
+    font-size: 0.9rem; /* Smaller text */
+}
+
+body:not(.dark) .form-group label {
+    color: var(--light-text-primary);
+}
+
+body.dark .form-group label {
+    color: var(--dark-text-primary);
+}
+
+.form-group input,
+.form-group textarea {
     width: 100%;
-    max-width: 500px;
-}
-
-h1 {
-    font-size: 2rem;
-    color: #00bcd4;
-    margin-bottom: 1rem;
-}
-
-p {
-    color: #bbb;
-    font-size: 1rem;
-    margin-bottom: 1rem;
-}
-
-/* Input Fields */
-input, textarea {
-    width: 100%;
-    padding: 0.75rem;
-    margin-bottom: 1rem;
-    border: 1px solid #444;
+    padding: 0.6rem; /* Smaller padding */
     border-radius: 5px;
-    background: #222;
-    color: #fff;
-    font-size: 1rem;
+    transition: all 0.3s ease;
+    font-size: 0.9rem; /* Smaller text */
 }
 
-input:focus, textarea:focus {
-    border-color: #00bcd4;
+body:not(.dark) .form-group input,
+body:not(.dark) .form-group textarea {
+    background-color: var(--light-bg-tertiary);
+    border: 1px solid var(--light-border-color);
+    color: var(--light-text-primary);
+}
+
+body.dark .form-group input,
+body.dark .form-group textarea {
+    background-color: var(--dark-bg-tertiary);
+    border: 1px solid var(--dark-border-color);
+    color: var(--dark-text-primary);
+}
+
+body:not(.dark) .form-group input:focus,
+body:not(.dark) .form-group textarea:focus {
     outline: none;
-    box-shadow: 0 0 5px #00bcd4;
+    border-color: var(--light-text-accent);
 }
 
-/* Send Button */
-.send-btn {
-    width: 100%;
-    background: #00bcd4;
-    color: white;
-    padding: 0.75rem;
+body.dark .form-group input:focus,
+body.dark .form-group textarea:focus {
+    outline: none;
+    border-color: var(--dark-text-accent);
+}
+
+.form-group textarea {
+    resize: vertical;
+    min-height: 100px; /* Reduced height */
+}
+
+.submit-button {
+    display: inline-block;
+    padding: 0.6rem 1.5rem; /* Smaller padding */
     border: none;
     border-radius: 5px;
-    font-size: 1.1rem;
     cursor: pointer;
-    transition: background 0.3s ease;
+    font-size: 0.9rem; /* Smaller text */
+    transition: all 0.3s ease;
+    width: 100%; /* Full width button */
+    text-align: center;
 }
 
-.send-btn:hover {
-    background: #008c96;
+body:not(.dark) .submit-button {
+    background-color: var(--light-text-accent);
+    color: white;
+}
+
+body.dark .submit-button {
+    background-color: var(--dark-text-accent);
+    color: var(--dark-bg-primary);
+}
+
+body:not(.dark) .submit-button:hover {
+    background-color: #2980b9;
+}
+
+body.dark .submit-button:hover {
+    background-color: #90cdf4;
+}
+
+.contact-info {
+    margin-top: 2rem; /* Reduced margin */
+    padding-top: 1.5rem; /* Reduced padding */
+    border-top-width: 1px;
+    border-top-style: solid;
+    transition: border-color 0.3s ease;
+}
+
+body:not(.dark) .contact-info {
+    border-top-color: var(--light-border-color);
+}
+
+body.dark .contact-info {
+    border-top-color: var(--dark-border-color);
+}
+
+.contact-info h2 {
+    font-size: 1.2rem; /* Smaller heading */
+    margin-bottom: 0.8rem; /* Reduced margin */
+    transition: color 0.3s ease;
+    text-align: center;
+}
+
+body:not(.dark) .contact-info h2 {
+    color: var(--light-text-primary);
+}
+
+body.dark .contact-info h2 {
+    color: var(--dark-text-primary);
+}
+
+.contact-details {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); /* Narrower columns */
+    gap: 0.8rem; /* Reduced gap */
+}
+
+.contact-detail-item {
+    padding: 0.8rem; /* Reduced padding */
+    border-radius: 5px;
+    transition: all 0.3s ease;
+    text-align: center;
+}
+
+body:not(.dark) .contact-detail-item {
+    background-color: var(--light-bg-tertiary);
+}
+
+body.dark .contact-detail-item {
+    background-color: var(--dark-bg-tertiary);
+}
+
+.contact-detail-item h3 {
+    font-size: 1rem; /* Smaller heading */
+    margin-bottom: 0.3rem; /* Reduced margin */
+    transition: color 0.3s ease;
+}
+
+body:not(.dark) .contact-detail-item h3 {
+    color: var(--light-text-accent);
+}
+
+body.dark .contact-detail-item h3 {
+    color: var(--dark-text-accent);
+}
+
+.contact-detail-item p {
+    transition: color 0.3s ease;
+    font-size: 0.85rem; /* Smaller text */
+}
+
+body:not(.dark) .contact-detail-item p {
+    color: var(--light-text-secondary);
+}
+
+body.dark .contact-detail-item p {
+    color: var(--dark-text-secondary);
 }
 
 /* Back Home Link */
 .back-link {
-    margin-top: 1rem;
-    font-size: 0.9rem;
+    text-align: center;
+    margin-top: 1.2rem; /* Reduced margin */
+    font-size: 0.9rem; /* Smaller text */
 }
 
 .back-link a {
-    color: #00bcd4;
+    transition: color 0.3s ease;
     text-decoration: none;
-    font-weight: 600;
+}
+
+body:not(.dark) .back-link a {
+    color: var(--light-text-accent);
+}
+
+body.dark .back-link a {
+    color: var(--dark-text-accent);
 }
 
 .back-link a:hover {
     text-decoration: underline;
 }
 
-/* Footer */
-.footer {
-    margin-top: 2rem;
+/* Submit Success Message */
+.submit-message {
+    background-color: rgba(39, 174, 96, 0.2);
+    color: #27ae60;
+    padding: 0.5rem;
+    text-align: center;
+    border-radius: 5px;
+    margin-bottom: 1rem;
     font-size: 0.9rem;
-    color: #bbb;
+}
+
+body.dark .submit-message {
+    background-color: rgba(39, 174, 96, 0.2);
+    color: #68d391;
+}
+
+/* Footer with contact information */
+.contact-footer {
+    position: fixed;
+    bottom: -100px; /* Hide footer by default by positioning it below the viewport */
+    left: 0;
+    width: 100%;
+    padding: 0.01rem 0; /* Minimal padding */
+    transition: all 0.3s ease;
+    z-index: 10;
+    line-height: 0.8; /* Reduced line height */
+    height: auto; /* Auto height based on content */
+    max-height: 60px; /* Maximum height for the footer */
+    overflow: hidden; /* Hide overflow content */
+}
+
+.contact-footer:hover {
+    bottom: 0; /* Show footer on hover */
+}
+
+/* Add a hover trigger area */
+.footer-trigger {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 10px; /* Small trigger area at the bottom of the screen */
+    z-index: 9;
+}
+
+.footer-trigger:hover + .contact-footer,
+.contact-footer:hover {
+    bottom: 0; /* Show footer when hovering over trigger or footer itself */
+}
+
+body:not(.dark) .contact-footer {
+    background-color: var(--light-bg-secondary);
+    border-top: 1px solid var(--light-border-color);
+    color: var(--light-text-primary);
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
+}
+
+body.dark .contact-footer {
+    background-color: var(--dark-bg-secondary);
+    border-top: 1px solid var(--dark-border-color);
+    color: var(--dark-text-primary);
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.2);
+}
+
+.footer-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1rem;
+    padding-top: 0.01rem; /* Added minimal top padding */
+    padding-bottom: 0.01rem; /* Added minimal bottom padding */
+    text-align: center;
+}
+
+.footer-container h3 {
+    font-size: 0.75rem; /* Reduced size further */
+    margin-bottom: 0.2rem; /* Reduced margin */
+    transition: color 0.3s ease;
+}
+
+body:not(.dark) .footer-container h3 {
+    color: var(--light-text-accent);
+}
+
+body.dark .footer-container h3 {
+    color: var(--dark-text-accent);
+}
+
+.footer-info-grid {
+    display: flex;
+    justify-content: space-between; /* Changed from center to space-between */
+    flex-wrap: nowrap; /* Prevent wrapping */
+    gap: 0.7rem; /* Kept reduced gap */
+    margin-bottom: 0.2rem; /* Kept reduced margin */
+    width: 100%; /* Ensure it takes full width */
+}
+
+.footer-info-item {
+    min-width: 0; /* Remove minimum width */
+    flex: 1; /* Each item takes equal space */
+    text-align: center; /* Center text within each item */
+}
+
+.footer-info-item:first-child {
+    text-align: left; /* Left align the first item (Email) */
+}
+
+.footer-info-item:last-child {
+    text-align: right; /* Right align the last item (Location) */
+}
+
+.footer-home-link {
+    margin-top: 0.1rem; /* Reduced margin */
+}
+
+.footer-home-link a {
+    font-size: 0.65rem; /* Reduced size */
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+body:not(.dark) .footer-home-link a {
+    color: var(--light-text-accent);
+}
+
+body.dark .footer-home-link a {
+    color: var(--dark-text-accent);
+}
+
+.footer-home-link a:hover {
+    text-decoration: underline;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .contact-container {
+        padding: 1rem;
+        padding-bottom: 160px; /* Reduced from 200px to match smaller footer */
+    }
+    
+    .contact-content {
+        max-width: 450px;
+        padding: 1rem;
+    }
+
+    .footer-info-grid {
+        flex-direction: column;
+        gap: 0.5rem; /* Reduced from 1rem */
+    }
+    
+    .footer-info-item,
+    .footer-info-item:first-child,
+    .footer-info-item:last-child {
+        min-width: 100%;
+        text-align: center; /* Center all items on small screens */
+    }
+}
+
+@media (max-width: 480px) {
+    .contact-content {
+        max-width: 100%;
+    }
 }
