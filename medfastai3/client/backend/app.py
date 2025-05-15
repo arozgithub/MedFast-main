@@ -431,7 +431,8 @@ async def detect_tumor(image: UploadFile = File(...)):
         print(f"Processing tumor: {tumor_label} with raw confidence {raw_confidence:.4f}, boosted to {boosted_confidence:.4f}")
         
         if tumor_label == "notumor":
-            print(f"Skipping 'notumor' detection")
+            print(f"Detection is 'notumor' class")
+            # Don't set tumor_detected to true for notumor class
         else:
             tumor_detected = True
             
@@ -461,9 +462,9 @@ async def detect_tumor(image: UploadFile = File(...)):
             else:
                 color = (255, 255, 0)  # Yellow for others
                 
-            # Draw thicker rectangle and add text with boosted confidence
+            # Draw thicker rectangle and add text without confidence on image
             cv2.rectangle(annotated_img, (x1, y1), (x2, y2), color, 3)
-            label = f"{tumor_label}: {boosted_confidence:.2f}"
+            label = f"{tumor_label}"
             cv2.putText(annotated_img, label, (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.7, color, 2)
             
             # Add location text
@@ -651,5 +652,5 @@ async def predict_diabetes(input_data: DiabetesInput):
         return JSONResponse(content={"error": "Failed to predict diabetes outcome"}, status_code=500)
 
 
-# To run the app, use: uvicorn app:app --reload --port 8000
+# To run the app, use in backend: uvicorn app:app --reload --port 8000
 

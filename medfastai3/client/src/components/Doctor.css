@@ -7,7 +7,7 @@
 /* Sidebar */
 .sidebar {
     width: 250px;
-    background-color: #1e1e1e;
+    background-color:#171923;
     height: 100vh;
     position: relative;
     left: -250px; /* Start off-screen */
