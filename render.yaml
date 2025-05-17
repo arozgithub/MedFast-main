@@ -1,0 +1,29 @@
+services:
+  # Backend API service
+  - type: web
+    name: medfast-api
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: cd medfastai3/client/backend && uvicorn app:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.9.0
+      - key: GROQ_API_KEY
+        sync: false
+    plan: standard
+    
+  # Frontend web app
+  - type: web
+    name: medfast-web
+    env: node
+    buildCommand: cd medfastai3/client && npm install && npm run build
+    startCommand: npx serve -s medfastai3/client/build -l $PORT
+    envVars:
+      - key: NODE_VERSION
+        value: 16
+      - key: REACT_APP_API_URL
+        fromService:
+          name: medfast-api
+          type: web
+          property: url
+    plan: free

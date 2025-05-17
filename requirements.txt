@@ -16,3 +16,7 @@ imageio
 pydantic
 python-multipart
 sentence-transformers
+python-dotenv
+gunicorn
+httpx
+starlette

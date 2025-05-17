@@ -3,8 +3,12 @@
 
 // Determine the base URL for API requests based on environment
 const getBaseUrl = () => {
+  // Check for Render-specific environment variable first
+  if (process.env.REACT_APP_API_URL) {
+    return process.env.REACT_APP_API_URL;
+  }
   // In production (Vercel), API calls go to the same domain but with /api prefix
-  if (process.env.NODE_ENV === 'production') {
+  else if (process.env.NODE_ENV === 'production') {
     return '/api';
   }
   // In development, use localhost with the backend port
