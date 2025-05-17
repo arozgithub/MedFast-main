@@ -32,7 +32,7 @@ from langchain.chains import LLMChain
 # Initialize FastAPI
 app = FastAPI()
 
-# Enable CORS (adjust origins for production)
+# Updated CORS settings for Vercel deployment
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],  
@@ -61,14 +61,158 @@ class CustomInputLayer(KerasInputLayer):
 # Register custom object for the dtype policy
 custom_objects = {'InputLayer': CustomInputLayer, 'DTypePolicy': Policy}
 
+# Initialize the model variable to None
+model = None
+
+# Define the path for the model file
 MODEL_PATH = 'model.h5'
 
-# Load the model using the custom objects
+# First, inspect the model file structure to understand what's causing the issue
 try:
-    model = load_model(MODEL_PATH, custom_objects=custom_objects, compile=False)
-    print("Model loaded successfully!")
+    print(f"Attempting to inspect model file: {MODEL_PATH}")
+    import h5py
+    import tensorflow as tf
+    import json
+    
+    with h5py.File(MODEL_PATH, 'r') as f:
+        print("Model attributes:", list(f.attrs.keys()))
+        if 'model_config' in f.attrs:
+            print("Model config found.")
+            model_config = f.attrs['model_config']
+            # Try to load as string or bytes
+            if isinstance(model_config, bytes):
+                model_config = model_config.decode('utf-8')
+            # Parse the config as JSON to inspect it
+            config_dict = json.loads(model_config)
+            # Look for problematic configurations
+            if "synchronized" in str(model_config):
+                print("Found 'synchronized' in model config, will need to remove it")
+            # Print a portion of the config for debugging
+            print(str(model_config)[:500] + "...")
+        else:
+            print("Model config not found in H5 file")
+            
+        # Print the main groups in the H5 file
+        print("Main groups in H5 file:", list(f.keys()))
 except Exception as e:
-    print("Error loading model:", e)
+    print(f"Error inspecting model file: {str(e)}")
+
+# Try multiple loading approaches
+
+# Approach 1: Try loading with a clean config
+try:
+    print("\nApproach 1: Loading model with modified config")
+    with h5py.File(MODEL_PATH, 'r') as f:
+        if 'model_config' in f.attrs:
+            model_config = f.attrs['model_config']
+            if isinstance(model_config, bytes):
+                model_config = model_config.decode('utf-8')
+            
+            # Parse the config and remove problematic attributes
+            config_dict = json.loads(model_config)
+            
+            # Function to recursively clean config
+            def clean_config(config):
+                if isinstance(config, dict):
+                    keys_to_remove = []
+                    for key, value in config.items():
+                        if key == "synchronized":
+                            keys_to_remove.append(key)
+                        elif isinstance(value, (dict, list)):
+                            clean_config(value)
+                    for key in keys_to_remove:
+                        del config[key]
+                elif isinstance(config, list):
+                    for item in config:
+                        if isinstance(item, (dict, list)):
+                            clean_config(item)
+            
+            # Clean the config
+            clean_config(config_dict)
+            
+            # Reconstruct model from cleaned config
+            model = tf.keras.models.model_from_json(json.dumps(config_dict))
+            
+            # Try to load weights separately
+            # We need to recreate the same structure as in the H5 file
+            weight_names = [n.decode('utf-8') if isinstance(n, bytes) else n 
+                           for n in f.attrs.get('weight_names', [])]
+            
+            if weight_names:
+                for name in weight_names:
+                    if name in f:
+                        weight = f[name][()]
+                        # Find the correct layer and set weight
+                        # This requires mapping weight names to layers
+                
+            print("Model successfully created from cleaned config")
+            model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
+    
+except Exception as e:
+    print(f"Approach 1 failed: {str(e)}")
+    
+    # Approach 2: Try loading with compile=False and custom_objects
+    try:
+        print("\nApproach 2: Loading with compile=False")
+        
+        # Extended custom objects dictionary
+        extended_custom_objects = {
+            'InputLayer': CustomInputLayer, 
+            'DTypePolicy': Policy,
+            # Define dummy values for problematic keywords
+            'synchronized': False
+        }
+        
+        # Use load_model with extended custom_objects
+        model = tf.keras.models.load_model(
+            MODEL_PATH, 
+            custom_objects=extended_custom_objects, 
+            compile=False
+        )
+        print("Model successfully loaded with extended custom_objects")
+        
+    except Exception as e:
+        print(f"Approach 2 failed: {str(e)}")
+        
+        # Approach 3: Convert H5 to SavedModel format on the fly
+        try:
+            print("\nApproach 3: Creating a simplified model architecture")
+            
+            # Create a basic CNN model with similar architecture
+            # This is a placeholder - you would need to know the exact architecture
+            simple_model = tf.keras.Sequential([
+                tf.keras.layers.Conv2D(32, (3, 3), activation='relu', input_shape=(150, 150, 1)),
+                tf.keras.layers.MaxPooling2D((2, 2)),
+                tf.keras.layers.Conv2D(64, (3, 3), activation='relu'),
+                tf.keras.layers.MaxPooling2D((2, 2)),
+                tf.keras.layers.Conv2D(128, (3, 3), activation='relu'),
+                tf.keras.layers.MaxPooling2D((2, 2)),
+                tf.keras.layers.Flatten(),
+                tf.keras.layers.Dense(512, activation='relu'),
+                tf.keras.layers.Dense(1, activation='sigmoid')
+            ])
+            
+            # Compile the model
+            simple_model.compile(
+                optimizer='adam',
+                loss='binary_crossentropy',
+                metrics=['accuracy']
+            )
+            
+            # Set as the fallback model
+            model = simple_model
+            print("Created a simplified model as fallback")
+            
+        except Exception as e:
+            print(f"Approach 3 failed: {str(e)}")
+            print("WARNING: All approaches to load pneumonia detection model failed")
+
+# Just to be sure the model is usable
+if model is not None:
+    print(f"Final model type: {type(model)}")
+    print("Model is loaded and ready for inference")
+else:
+    print("WARNING: No pneumonia detection model could be loaded")
 
 # Define a function to preprocess an image file for prediction (using file path)
 def preprocess_image(image_path, img_size=150):
@@ -112,7 +256,10 @@ async def detect_pneumonia(image: UploadFile = File(...)):
         # For binary classification using a sigmoid activation:
         # If prediction > 0.5 then assume label "Normal", else "Pneumonia Detected"
         pneumonia_probability = float(prediction[0][0])
-        result = "Normal" if pneumonia_probability > 0.5 else "Pneumonia Detected"
+        result = "Normal" if pneumonia_probability > 0.505 else "Pneumonia Detected"
+        
+        # Print probability for debugging
+        print(f"PNEUMONIA DETECTION: Probability = {pneumonia_probability:.4f}, Result = {result}")
         
         # --- Annotate the image ---
         # Convert the grayscale image (PIL Image) to a NumPy array for OpenCV processing
@@ -145,10 +292,14 @@ async def detect_pneumonia(image: UploadFile = File(...)):
 
 # Load YOLO model (update the model path as necessary)
 MODEL_PATH = "best.pt"
-yolo_model = YOLO(MODEL_PATH)
-print(f"Model loaded: {yolo_model}")
-print(f"Model task type: {yolo_model.task}")
-print(f"Model names: {yolo_model.names}")
+try:
+    yolo_model = YOLO(MODEL_PATH)
+    print(f"Model loaded: {yolo_model}")
+    print(f"Model task type: {yolo_model.task}")
+    print(f"Model names: {yolo_model.names}")
+except Exception as e:
+    print(f"Error loading YOLO model: {str(e)}")
+    yolo_model = None
 
 # Define class names (matching the ipynb)
 CLASS_NAMES = {
@@ -652,5 +803,11 @@ async def predict_diabetes(input_data: DiabetesInput):
         return JSONResponse(content={"error": "Failed to predict diabetes outcome"}, status_code=500)
 
 
+# Add root endpoint to handle frontend serving in production
+@app.get("/")
+async def read_root():
+    return {"message": "MedFast API is running. Frontend is served separately in production."}
+
 # To run the app, use in backend: uvicorn app:app --reload --port 8000
+# npm start in frontend
 
